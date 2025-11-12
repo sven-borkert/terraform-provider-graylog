@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/client"
+	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/util"
 )
 
 func update(d *schema.ResourceData, m interface{}) error {
@@ -19,6 +20,12 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	data[keyID] = d.Id()
+
+	// Remove computed fields for Graylog 7.0 compatibility
+	// Note: keyID is intentionally set above and will be removed here,
+	// but the ID is passed in the URL path parameter
+	util.RemoveComputedFields(data)
+
 	if _, _, err := cl.EventDefinition.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a event definition %s: %w", d.Id(), err)
 	}
