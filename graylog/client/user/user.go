@@ -33,10 +33,19 @@ func (cl Client) Create(ctx context.Context, user interface{}) (*http.Response, 
 		return nil, errors.New("request body is nil")
 	}
 
+	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
+	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
+	requestData := map[string]interface{}{
+		"entity": user,
+		"share_request": map[string]interface{}{
+			"selected_grantee_capabilities": map[string]interface{}{},
+		},
+	}
+
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:      "POST",
 		Path:        "/users",
-		RequestBody: user,
+		RequestBody: requestData,
 	})
 	return resp, err
 }

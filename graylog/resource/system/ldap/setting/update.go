@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/client"
+	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/util"
 )
 
 func update(d *schema.ResourceData, m interface{}) error {
@@ -19,6 +20,10 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	delete(data, keySystemPasswordSet)
+
+	// Remove computed fields for Graylog 7.0 compatibility
+	util.RemoveComputedFields(data)
+
 	if _, err := cl.LDAPSetting.Update(ctx, data); err != nil {
 		return fmt.Errorf("failed to update a LDAP setting: %w", err)
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/client"
+	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/util"
 )
 
 func update(d *schema.ResourceData, m interface{}) error {
@@ -24,6 +25,9 @@ func update(d *schema.ResourceData, m interface{}) error {
 	delete(data, keyInGrace)
 	delete(data, keyStreamID)
 	delete(data, keyAlertConditionID)
+
+	// Remove computed fields for Graylog 7.0 compatibility
+	util.RemoveComputedFields(data)
 
 	sID := d.Get(keyStreamID).(string)
 	aID := d.Get(keyAlertConditionID).(string)

@@ -98,3 +98,43 @@ func SetDefaultValue(data map[string]interface{}, key string, value interface{})
 		data[key] = value
 	}
 }
+
+// WrapEntityForCreation wraps entity data in CreateEntityRequest structure
+// required by Graylog 7.0+ for entity creation endpoints (streams, dashboards,
+// event definitions, event notifications, etc.)
+//
+// Example transformation:
+//
+//	Input:  {"title": "My Stream", "index_set_id": "123"}
+//	Output: {"entity": {"title": "My Stream", "index_set_id": "123"}, "share_request": {"selected_grantee_capabilities": {}}}
+func WrapEntityForCreation(entityData map[string]interface{}) map[string]interface{} {
+	if entityData == nil {
+		return map[string]interface{}{
+			"entity": map[string]interface{}{},
+			"share_request": map[string]interface{}{
+				"selected_grantee_capabilities": map[string]interface{}{},
+			},
+		}
+	}
+	return map[string]interface{}{
+		"entity": entityData,
+		"share_request": map[string]interface{}{
+			"selected_grantee_capabilities": map[string]interface{}{},
+		},
+	}
+}
+
+// RemoveComputedFields removes read-only/computed fields from data that should not
+// be sent in update requests. Graylog 7.0+ rejects unknown/read-only properties.
+//
+// Common computed fields removed:
+//   - id: Resource identifier (set in URL path, not body)
+//   - created_at: Creation timestamp (server-generated)
+//   - creator_user_id: Creator identifier (server-generated)
+//   - last_modified: Last modification timestamp (server-generated)
+func RemoveComputedFields(data map[string]interface{}) {
+	delete(data, "id")
+	delete(data, "created_at")
+	delete(data, "creator_user_id")
+	delete(data, "last_modified")
+}

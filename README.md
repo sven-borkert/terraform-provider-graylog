@@ -1,12 +1,5 @@
 # terraform-provider-graylog
 
-## :warning: This project was EOL
-
-Unfortunately, it is difficult for us to maintain this project, because we no longer use Graylog.
-We hope someone forks this repository and maintains it.
-
----
-
 [![Build Status](https://github.com/terraform-provider-graylog/terraform-provider-graylog/workflows/CI/badge.svg)](https://github.com/terraform-provider-graylog/terraform-provider-graylog/actions)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/68758b442c809c2fe7cf/test_coverage)](https://codeclimate.com/github/terraform-provider-graylog/terraform-provider-graylog/test_coverage)
 [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-provider-graylog/terraform-provider-graylog)](https://goreportcard.com/report/github.com/terraform-provider-graylog/terraform-provider-graylog)
@@ -15,8 +8,102 @@ We hope someone forks this repository and maintains it.
 
 Terraform Provider for [Graylog](https://docs.graylog.org/)
 
-- [Document](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
+**Now with Graylog 7.0 support!** 🎉
+
+## Compatibility
+
+| Provider Version | Graylog Version | Status |
+|-----------------|-----------------|--------|
+| v2.0.0+ | Graylog 7.0+ | ✅ Fully supported |
+| v1.x.x | Graylog 3.x - 6.x | ⚠️ Not compatible with Graylog 7.0 |
+
+**Upgrading to Graylog 7.0?** See the [Migration Guide](MIGRATION_GUIDE_V7.md)
+
+## Quick Start
+
+```hcl
+terraform {
+  required_providers {
+    graylog = {
+      source  = "terraform-provider-graylog/graylog"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "graylog" {
+  web_endpoint_uri = "https://graylog.example.com/api"
+  auth_name        = "admin"
+  auth_password    = var.graylog_password
+}
+```
+
+## Documentation
+
+- [Provider Documentation](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
 - [Terraform Registry](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
+- [Migration Guide to Graylog 7.0](MIGRATION_GUIDE_V7.md)
+- [API Mapping for Graylog 7.0](API_MAPPING.md)
+
+## What's New in v2.0
+
+### Graylog 7.0 API Compatibility
+
+The provider has been fully updated to support Graylog 7.0's breaking API changes:
+
+- ✅ **CreateEntityRequest wrapper** - All entity creation automatically uses the new Graylog 7.0 request format
+- ✅ **Unknown properties validation** - Computed fields are automatically removed from update requests
+- ✅ **Backward compatible** - Existing Terraform configurations work without changes
+
+### Supported Resources (25)
+
+**Streams & Alerting:**
+- `graylog_stream` - Stream management
+- `graylog_stream_rule` - Stream routing rules
+- `graylog_stream_output` - Stream output associations
+- `graylog_alarm_callback` - Legacy alarm callbacks (deprecated)
+- `graylog_alert_condition` - Legacy alert conditions (deprecated)
+
+**Events System:**
+- `graylog_event_definition` - Modern event definitions
+- `graylog_event_notification` - Modern notifications
+
+**Inputs & Processing:**
+- `graylog_input` - Input configuration
+- `graylog_input_static_fields` - Static field enrichment
+- `graylog_extractor` - Message extractors
+- `graylog_grok_pattern` - Grok pattern library
+
+**Pipelines:**
+- `graylog_pipeline` - Processing pipelines
+- `graylog_pipeline_rule` - Pipeline rules
+- `graylog_pipeline_connection` - Pipeline to stream connections
+
+**Dashboards:**
+- `graylog_dashboard` - Dashboard management
+- `graylog_dashboard_widget` - Dashboard widgets
+- `graylog_dashboard_widget_positions` - Widget layout
+
+**System:**
+- `graylog_index_set` - Index set configuration
+- `graylog_output` - Output destinations
+- `graylog_ldap_setting` - LDAP authentication
+
+**Security:**
+- `graylog_user` - User management
+- `graylog_role` - Role-based access control
+
+**Sidecars:**
+- `graylog_sidecars` - Sidecar registration
+- `graylog_sidecar_collector` - Collector configuration
+- `graylog_sidecar_configuration` - Sidecar configs
+
+### Supported Data Sources (4)
+
+- `graylog_stream` - Query streams
+- `graylog_dashboard` - Query dashboards
+- `graylog_index_set` - Query index sets
+- `graylog_sidecar` - Query sidecars
  
 ## License
 

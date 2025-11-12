@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/client"
+	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/util"
 )
 
 func update(d *schema.ResourceData, m interface{}) error {
@@ -19,6 +20,10 @@ func update(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Remove computed fields for Graylog 7.0 compatibility
+	util.RemoveComputedFields(data)
+
 	o := oldName.(string)
 	if _, _, err := cl.Role.Update(ctx, o, data); err != nil {
 		return fmt.Errorf("failed to update a role %s: %w", o, err)
