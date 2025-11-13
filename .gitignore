@@ -7,3 +7,5 @@ coverage.txt
 profile.txt
 dist
 .goreleaser.yml
+terraform-provider-graylog
+.sshenv

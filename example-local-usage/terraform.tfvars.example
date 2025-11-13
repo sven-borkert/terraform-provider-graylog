@@ -1,0 +1,6 @@
+# Example Terraform variables file
+# Copy this to terraform.tfvars and fill in your values
+
+graylog_endpoint = "https://your-graylog-server.com/api"
+graylog_username = "admin"
+graylog_password = "your-secure-password"
