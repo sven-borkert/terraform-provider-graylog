@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2025-11-13
 
 ### Added
 - **Graylog 7.0 API compatibility** - Full support for Graylog 7.0's breaking API changes
@@ -107,7 +107,7 @@ Previous versions supported Graylog 3.x through 6.x. See git history for detaile
 
 ### Current Status
 
-- **v2.0.0**: In development - Graylog 7.0 compatibility
+- **v3.0.0**: Released 2025-11-13 - Complete refactoring for Graylog 7.0 compatibility
 - **v1.x.x**: Maintenance mode - Graylog 3.x - 6.x support
 
 ---
@@ -122,4 +122,4 @@ Previous versions supported Graylog 3.x through 6.x. See git history for detaile
 
 ---
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-13

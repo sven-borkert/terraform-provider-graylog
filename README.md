@@ -14,7 +14,7 @@ Terraform Provider for [Graylog](https://docs.graylog.org/)
 
 | Provider Version | Graylog Version | Status |
 |-----------------|-----------------|--------|
-| v2.0.0+ | Graylog 7.0+ | ✅ Fully supported |
+| v3.0.0+ | Graylog 7.0+ | ✅ Fully supported |
 | v1.x.x | Graylog 3.x - 6.x | ⚠️ Not compatible with Graylog 7.0 |
 
 **Upgrading to Graylog 7.0?** See the [Migration Guide](MIGRATION_GUIDE_V7.md)

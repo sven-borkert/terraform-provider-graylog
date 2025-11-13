@@ -1,6 +1,6 @@
 # Migration Guide: Graylog 7.0 Compatibility
 
-**Version:** terraform-provider-graylog v2.0.0+
+**Version:** terraform-provider-graylog v3.0.0+
 **Target:** Graylog 7.0+
 **Date:** 2025-11-12
 
@@ -59,7 +59,7 @@ Graylog 7.0 now rejects API requests containing unknown or read-only JSON proper
 | Provider Version | Graylog Version | Status |
 |-----------------|-----------------|--------|
 | v1.x.x | Graylog 3.x - 6.x | ⚠️ Not compatible with Graylog 7.0 |
-| v2.0.0+ | Graylog 7.0+ | ✅ Fully compatible |
+| v3.0.0+ | Graylog 7.0+ | ✅ Fully compatible |
 
 ---
 
@@ -81,7 +81,7 @@ terraform {
   required_providers {
     graylog = {
       source  = "terraform-provider-graylog/graylog"
-      version = "~> 2.0"  # Update to v2.0.0+
+      version = "~> 3.0"  # Update to v3.0.0+
     }
   }
 }
@@ -122,7 +122,7 @@ terraform apply
 
 **Steps:**
 1. Upgrade Graylog server to 7.0
-2. Upgrade provider to v2.0.0+
+2. Upgrade provider to v3.0.0+
 3. Run `terraform plan`
 4. Verify no changes detected
 
@@ -302,7 +302,7 @@ POST /api/streams
 
 **Cause:** Graylog 7.0 rejects unknown fields.
 
-**Solution:** Upgrade to provider v2.0.0+ which automatically removes computed fields.
+**Solution:** Upgrade to provider v3.0.0+ which automatically removes computed fields.
 
 ---
 
@@ -310,7 +310,7 @@ POST /api/streams
 
 **Cause:** Using old provider with Graylog 7.0.
 
-**Solution:** Upgrade provider to v2.0.0+:
+**Solution:** Upgrade provider to v3.0.0+:
 ```bash
 terraform init -upgrade
 ```
@@ -343,7 +343,7 @@ Before completing migration:
 
 - [ ] Graylog server upgraded to 7.0+
 - [ ] Graylog server accessible and healthy
-- [ ] Provider upgraded to v2.0.0+
+- [ ] Provider upgraded to v3.0.0+
 - [ ] `terraform init -upgrade` completed successfully
 - [ ] `terraform plan` runs without errors
 - [ ] Test resource creation works
@@ -378,5 +378,5 @@ Report issues at: https://github.com/terraform-provider-graylog/terraform-provid
 ---
 
 **Last Updated:** 2025-11-12
-**Provider Version:** 2.0.0+
+**Provider Version:** 3.0.0+
 **Target Graylog Version:** 7.0+
