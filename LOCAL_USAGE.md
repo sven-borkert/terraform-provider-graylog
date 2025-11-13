@@ -21,10 +21,10 @@ OS=$(go env GOOS)
 ARCH=$(go env GOARCH)
 
 # Create the plugin directory structure
-mkdir -p ~/.terraform.d/plugins/terraform-provider-graylog/graylog/2.0.0/${OS}_${ARCH}
+mkdir -p ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}
 
 # Copy the built provider
-cp terraform-provider-graylog ~/.terraform.d/plugins/terraform-provider-graylog/graylog/2.0.0/${OS}_${ARCH}/
+cp terraform-provider-graylog ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}/
 ```
 
 ### Step 3: Configure Terraform to Use the Local Provider
@@ -36,7 +36,7 @@ terraform {
   required_providers {
     graylog = {
       source  = "terraform-provider-graylog/graylog"
-      version = "2.0.0"
+      version = "3.0.0"
     }
   }
 }
@@ -118,7 +118,7 @@ terraform {
   required_providers {
     graylog = {
       source  = "terraform-provider-graylog/graylog"
-      version = "2.0.0"
+      version = "3.0.0"
     }
   }
 }

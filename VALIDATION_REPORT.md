@@ -1,7 +1,7 @@
 # Graylog 7.0 Validation Report
 
 **Date:** 2025-11-12
-**Provider Version:** 2.0.0
+**Provider Version:** 3.0.0
 **Target Graylog Version:** 7.0+
 
 ---

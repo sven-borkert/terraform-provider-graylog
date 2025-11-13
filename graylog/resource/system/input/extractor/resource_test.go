@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/suzuki-shunsuke/flute/v2/flute"
-	"github.com/terraform-provider-graylog/terraform-provider-graylog/graylog/testutil"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/testutil"
 )
 
 func TestAccExtractor(t *testing.T) {

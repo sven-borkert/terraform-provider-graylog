@@ -3,7 +3,7 @@
 **Date:** 2025-11-12
 **Project:** terraform-provider-graylog
 **Target:** Graylog 7.0 API Compatibility
-**Version:** 2.0.0
+**Version:** 3.0.0
 
 ---
 

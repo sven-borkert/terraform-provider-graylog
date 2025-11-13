@@ -203,7 +203,7 @@ AUDIT_REPORT.md (new)
 ### For Terraform Provider
 
 **Version Requirements:**
-- **v2.0.0+** - Requires Graylog 7.0 or later
+- **v3.0.0+** - Requires Graylog 7.0 or later
 - **v1.x.x** - Works with Graylog 3.x - 6.x (not compatible with 7.0)
 
 ### For End Users
@@ -267,7 +267,7 @@ TF_ACC=1 go test ./graylog/... -v -timeout 180m
 1. Review all documentation
 2. Run test suite (optional)
 3. Create pull request
-4. Tag release version (v2.0.0)
+4. Tag release version (v3.0.0)
 5. Publish to Terraform Registry
 
 ---

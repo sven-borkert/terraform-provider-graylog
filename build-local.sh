@@ -19,7 +19,7 @@ then
     # Detect OS and architecture
     OS=$(go env GOOS)
     ARCH=$(go env GOARCH)
-    VERSION="2.0.0"
+    VERSION="3.0.0"
 
     # Create plugin directory
     PLUGIN_DIR="$HOME/.terraform.d/plugins/terraform-provider-graylog/graylog/$VERSION/${OS}_${ARCH}"
