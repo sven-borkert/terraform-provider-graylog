@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Migration Notes
 
-### From v1.x to v2.0
+### From v1.x to v3.0.0
 
 **Prerequisites:**
 - Graylog must be upgraded to version 7.0 or later first
@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      required_providers {
        graylog = {
          source  = "terraform-provider-graylog/graylog"
-         version = "~> 2.0"
+         version = "~> 3.0"
        }
      }
    }
@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **No Terraform Configuration Changes Required:**
 Your existing `.tf` files work without modification. The provider handles all API format changes internally.
 
-See [MIGRATION_GUIDE_V7.md](MIGRATION_GUIDE_V7.md) for detailed migration instructions.
+See [docs/guides/migration_guide_v7.md](guides/migration_guide_v7.md) for detailed migration instructions.
 
 ## Previous Releases
 
