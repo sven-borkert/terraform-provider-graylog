@@ -1,117 +1,133 @@
-# Using the Terraform Provider Graylog from Local Repository
+# Local Provider Testing and Development
 
-This guide explains how to build and use the terraform-provider-graylog directly from this git repository.
+This guide explains how to test and develop the Graylog Terraform provider locally.
 
-## Method 1: Build and Install Locally (Recommended)
+## Quick Start
 
-### Step 1: Build the Provider
+For comprehensive examples and tools for local provider testing, see the **[example-local-usage](../../example-local-usage/)** directory in the repository root.
+
+The example-local-usage directory provides:
+- Complete working examples
+- Multiple testing methods (standard, developer override, Makefile)
+- Build scripts and helper tools
+- Import examples and data source queries
+- Comprehensive documentation
+
+## Testing Methods
+
+### Method 1: Using the Example Directory (Recommended)
+
+The easiest way to test the provider locally is to use the example directory:
 
 ```bash
-# From the repository root directory
-go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
+# Navigate to the example directory
+cd example-local-usage/
+
+# Build the provider and set up for testing
+make setup
+
+# Run terraform plan
+make plan
 ```
 
-### Step 2: Install to Local Terraform Plugin Directory
+See the [example-local-usage README](../../example-local-usage/README.md) for detailed instructions.
 
-For Terraform 0.13+, install the provider to your local plugin directory:
+### Method 2: Manual Build and Install
+
+If you prefer to manually build and install:
 
 ```bash
-# Determine your OS and architecture
+# Build the provider
+go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
+
+# Install to local plugin directory
 OS=$(go env GOOS)
 ARCH=$(go env GOARCH)
-
-# Create the plugin directory structure
 mkdir -p ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}
-
-# Copy the built provider
 cp terraform-provider-graylog ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}/
+
+# Use in your Terraform configuration
+terraform init
 ```
 
-### Step 3: Configure Terraform to Use the Local Provider
+### Method 3: Developer Override Mode
 
-Create a `versions.tf` file in your Terraform configuration:
+For active development with fast iteration:
 
-```hcl
-terraform {
-  required_providers {
-    graylog = {
-      source  = "terraform-provider-graylog/graylog"
-      version = "3.0.0"
-    }
-  }
-}
+```bash
+# Build the provider
+go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 
-provider "graylog" {
-  web_endpoint_uri = "https://your-graylog-server.com/api"
-  auth_name        = "admin"
-  auth_password    = "your-password"
-  api_version      = "v1"
-}
-```
-
-## Method 2: Development Override (For Active Development)
-
-If you're actively developing the provider, use Terraform's development overrides:
-
-### Step 1: Create a Terraform CLI Configuration
-
-Create or edit `~/.terraformrc`:
-
-```hcl
+# Create or edit ~/.terraformrc
+cat > ~/.terraformrc <<EOF
 provider_installation {
   dev_overrides {
-    "terraform-provider-graylog/graylog" = "/home/sborkert/Repos/terraform-provider-graylog"
+    "terraform-provider-graylog/graylog" = "$(pwd)"
   }
-
-  # For all other providers, install them directly from their origin provider
-  # registries as normal. If you omit this, Terraform will _only_ use
-  # the dev_overrides block, and so no other providers will be available.
   direct {}
 }
+EOF
+
+# No terraform init needed - just run terraform plan
+terraform plan
 ```
 
-### Step 2: Build the Provider
+## Development Workflow
+
+### Standard Development Cycle
+
+1. Make changes to the provider code
+2. Build the provider: `go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog`
+3. Test your changes: `terraform plan` or `terraform apply`
+4. Iterate as needed
+
+### Using the Example Directory
+
+The example-local-usage directory provides the best development experience:
 
 ```bash
-# Build the provider in the repository root
-go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
+cd example-local-usage/
+
+# Rebuild provider after code changes
+make build
+
+# Test with developer overrides (no init needed)
+make plan
+make apply
+
+# Clean up when done
+make clean
 ```
 
-### Step 3: Use in Your Terraform Configuration
+## Testing Against Real Graylog
 
-With dev_overrides, you don't need to run `terraform init`. Just use the provider:
+### Prerequisites
+
+- Running Graylog 7.0+ instance
+- Admin credentials
+- Network access to Graylog API
+
+### Configuration
+
+Create a `terraform.tfvars` file:
 
 ```hcl
-provider "graylog" {
-  web_endpoint_uri = "https://your-graylog-server.com/api"
-  auth_name        = "admin"
-  auth_password    = "your-password"
-  api_version      = "v1"
-}
-
-# Example resource
-resource "graylog_stream" "example" {
-  title                              = "Example Stream"
-  description                        = "Stream for example logs"
-  index_set_id                       = "default"
-  remove_matches_from_default_stream = true
-}
+graylog_endpoint    = "https://your-graylog-server.com/api"
+graylog_username    = "admin"
+graylog_password    = "your-password"
+graylog_api_version = "v1"
 ```
 
-## Method 3: Using Go Install
-
-You can also install directly using go:
+Or use environment variables:
 
 ```bash
-# Install the provider globally
-go install github.com/terraform-provider-graylog/terraform-provider-graylog/cmd/terraform-provider-graylog@latest
-
-# The binary will be available in $GOPATH/bin or $HOME/go/bin
+export TF_VAR_graylog_endpoint="https://your-graylog-server.com/api"
+export TF_VAR_graylog_username="admin"
+export TF_VAR_graylog_password="your-password"
+export TF_VAR_graylog_api_version="v1"
 ```
 
-## Example Terraform Configuration
-
-Here's a complete example configuration file (`main.tf`):
+### Example Test Configuration
 
 ```hcl
 terraform {
@@ -124,138 +140,77 @@ terraform {
 }
 
 provider "graylog" {
-  web_endpoint_uri = var.graylog_web_endpoint_uri
-  auth_name        = var.graylog_auth_name
-  auth_password    = var.graylog_auth_password
-  api_version      = "v1"
+  web_endpoint_uri = var.graylog_endpoint
+  auth_name        = var.graylog_username
+  auth_password    = var.graylog_password
+  api_version      = var.graylog_api_version
 }
 
-variable "graylog_web_endpoint_uri" {
-  description = "Graylog API endpoint URI"
-  type        = string
+# Test with a simple stream
+resource "graylog_stream" "test" {
+  title                              = "Test Stream"
+  description                        = "Created for provider testing"
+  index_set_id                       = data.graylog_index_set.default.id
+  remove_matches_from_default_stream = false
 }
 
-variable "graylog_auth_name" {
-  description = "Graylog authentication username"
-  type        = string
-}
-
-variable "graylog_auth_password" {
-  description = "Graylog authentication password"
-  type        = string
-  sensitive   = true
-}
-
-# Example: Create an index set
-resource "graylog_index_set" "example" {
-  title                = "Example Index Set"
-  description          = "An example index set for testing"
-  index_prefix         = "example"
-  shards               = 1
-  replicas             = 0
-  rotation_strategy    = "count"
-  rotation_strategy_details = jsonencode({
-    type               = "org.graylog2.indexer.rotation.strategies.MessageCountRotationStrategy"
-    max_docs_per_index = 20000000
-  })
-  retention_strategy   = "delete"
-  retention_strategy_details = jsonencode({
-    type                    = "org.graylog2.indexer.retention.strategies.DeletionRetentionStrategy"
-    max_number_of_indices   = 10
-  })
-  index_analyzer       = "standard"
-  index_optimization_max_num_segments = 1
-  field_type_refresh_interval = 5000
-}
-
-# Example: Create a stream
-resource "graylog_stream" "example" {
-  title                              = "Example Stream"
-  description                        = "Stream for example application logs"
-  index_set_id                       = graylog_index_set.example.id
-  remove_matches_from_default_stream = true
-}
-
-# Example: Create a stream rule
-resource "graylog_stream_rule" "example" {
-  stream_id    = graylog_stream.example.id
-  field        = "application"
-  value        = "example-app"
-  type         = 1  # EXACT match
-  inverted     = false
-  description  = "Match logs from example-app"
+data "graylog_index_set" "default" {
+  index_set_id = "default"
 }
 ```
 
-## Environment Variables
+## Debugging
 
-You can also use environment variables for authentication:
+### Enable Debug Logging
 
 ```bash
-export GRAYLOG_WEB_ENDPOINT_URI="https://your-graylog-server.com/api"
-export GRAYLOG_AUTH_NAME="admin"
-export GRAYLOG_AUTH_PASSWORD="your-password"
+export TF_LOG=DEBUG
+terraform plan
 ```
 
-Then in your Terraform configuration, the provider block can be simplified:
+### Provider Logs
 
-```hcl
-provider "graylog" {
-  # Authentication will be read from environment variables
-  api_version = "v1"
-}
-```
+The provider logs detailed information about API calls when debug logging is enabled.
 
-## Testing Your Configuration
+### Common Issues
 
-1. Build the provider (if using local build):
-   ```bash
-   go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
-   ```
+**Provider not found:**
+- Ensure the binary is built and in the correct location
+- Check that the plugin directory structure is correct
+- Verify dev_overrides path is absolute (if using)
 
-2. Initialize Terraform (skip if using dev_overrides):
-   ```bash
-   terraform init
-   ```
+**Authentication failures:**
+- Verify the API endpoint includes `/api`
+- Check user has necessary permissions in Graylog 7.0+
+- Test API access with curl:
+  ```bash
+  curl -u admin:password https://your-graylog.com/api/system
+  ```
 
-3. Plan your changes:
-   ```bash
-   terraform plan
-   ```
+**API errors:**
+- Check Graylog version compatibility (requires 7.0+)
+- Review Graylog logs for detailed error messages
+- Ensure resources exist before querying them
 
-4. Apply the configuration:
-   ```bash
-   terraform apply
-   ```
+## Additional Resources
 
-## Troubleshooting
+- **[Example Directory](../../example-local-usage/)** - Complete working examples
+- **[Migration Guide](migration_guide_v7.md)** - Upgrading to Graylog 7.0
+- **[API Mapping](../reference/api_mapping.md)** - API changes documentation
+- **[Provider Naming](provider_naming.md)** - Resource naming conventions
 
-### Provider Not Found
+## Quick Reference
 
-If Terraform cannot find the provider, check:
-- The provider binary is built and in the correct location
-- The plugin directory structure matches: `~/.terraform.d/plugins/<namespace>/<name>/<version>/<os>_<arch>/`
-- Your `versions.tf` specifies the correct source and version
+| Task | Command |
+|------|---------|
+| Build provider | `go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog` |
+| Build from example dir | `cd example-local-usage && make build` |
+| Run quick test | `cd example-local-usage && make plan` |
+| Install locally | `./build-local.sh` (interactive) |
+| Setup example | `cd example-local-usage && make setup` |
+| Clean test environment | `cd example-local-usage && make clean` |
 
-### Authentication Issues
+## See Also
 
-Ensure:
-- The API endpoint includes `/api` (e.g., `https://graylog.example.com/api`)
-- Your user has the necessary permissions in Graylog
-- For Graylog 7.0+, ensure your user has the required API permissions
-
-### Development Override Not Working
-
-If using `.terraformrc`:
-- Ensure the path in `dev_overrides` is absolute
-- The provider binary must be named `terraform-provider-graylog` and be in the specified directory
-- You cannot use `terraform init` with dev_overrides active
-
-## Graylog 7.0 Compatibility
-
-This provider now fully supports Graylog 7.0. The provider automatically handles:
-- CreateEntityRequest wrapper for entity creation
-- Removal of computed fields in update requests
-- All API changes required for Graylog 7.0
-
-Your existing Terraform configurations will work without modification when upgrading to Graylog 7.0.
+For the most comprehensive and up-to-date testing documentation, always refer to:
+- **[example-local-usage/README.md](../../example-local-usage/README.md)**
