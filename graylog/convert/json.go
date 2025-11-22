@@ -66,3 +66,12 @@ func JSONToData(data map[string]interface{}, keys ...string) error {
 	}
 	return nil
 }
+
+// StringJSONToData parses a raw JSON string into map[string]interface{}
+func StringJSONToData(s string) (map[string]interface{}, error) {
+	attr, err := dataeq.JSON.ConvertByte([]byte(s))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+	return attr.(map[string]interface{}), nil
+}

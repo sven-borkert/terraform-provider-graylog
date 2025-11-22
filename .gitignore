@@ -9,3 +9,9 @@ dist
 .goreleaser.yml
 terraform-provider-graylog
 .sshenv
+.venv/
+.mcp/
+examples/graylog7-e2e/graylog.auto.tfvars
+example-local-usage
+.venv
+docs/api-docs

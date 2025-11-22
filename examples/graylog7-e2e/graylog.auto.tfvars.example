@@ -1,0 +1,8 @@
+# Graylog admin credentials for local E2E testing (do not commit real values)
+web_endpoint_uri = "https://graylog.internal.borkert.net/api"
+auth_name        = "admin"
+auth_password    = "CHANGE_ME"
+# Optional: x_requested_by defaults to terraform-provider-graylog
+# x_requested_by = "terraform-provider-graylog-e2e"
+# Optional: api_version defaults to v3; keep as-is for Graylog 7
+# api_version = "v3"

@@ -105,6 +105,18 @@ The provider has been fully updated to support Graylog 7.0's breaking API change
 - `graylog_index_set` - Query index sets
 - `graylog_sidecar` - Query sidecars
  
+## Development
+
+- Build locally:
+  ```bash
+  make build
+  ```
+- Optional local mirror install (for workflows without dev_overrides):
+  ```bash
+  make dev-install
+  ```
+- When using `~/.terraformrc` dev_overrides (recommended for development), Terraform uses whatever binary is in `bin/` at plan/apply time. Re-run `make build` to pick up changes; no re-init needed. If you do run `terraform init`, clear `.terraform/` and `.terraform.lock.hcl` to avoid stale binaries.
+
 ## License
 
 [MIT](LICENSE)

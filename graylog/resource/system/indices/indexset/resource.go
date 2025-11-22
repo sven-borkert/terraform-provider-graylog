@@ -81,6 +81,10 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"use_legacy_rotation": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"writable": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -89,10 +93,38 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"can_be_default": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			// field_type_refresh_interval was added from Graylog API v3
 			"field_type_refresh_interval": {
 				Type:     schema.TypeInt,
 				Optional: true,
+			},
+			"field_type_profile": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"index_set_template_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				// Built-in "30 Days Hot" template ID on this Graylog 7 instance
+				Default: "692067a9371785137c9b2b75",
+			},
+			"data_tiering": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "{\"type\":\"hot_only\",\"index_lifetime_min\":\"P30D\",\"index_lifetime_max\":\"P40D\"}",
+				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
+				ValidateFunc:     util.ValidateIsJSON,
+			},
+			"field_restrictions": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "{}",
+				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
+				ValidateFunc:     util.ValidateIsJSON,
 			},
 		},
 	}

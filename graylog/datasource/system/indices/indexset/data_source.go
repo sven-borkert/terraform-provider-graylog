@@ -68,6 +68,10 @@ func DataSource() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"use_legacy_rotation": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"writable": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -76,9 +80,29 @@ func DataSource() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"can_be_default": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			// field_type_refresh_interval is added from Graylog API v3
 			"field_type_refresh_interval": {
 				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"field_type_profile": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"index_template_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"data_tiering": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"field_restrictions": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
