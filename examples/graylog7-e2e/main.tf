@@ -100,6 +100,20 @@ resource "graylog_stream_rule" "tf_e2e_source" {
   inverted    = false
 }
 
+resource "graylog_output" "stdout" {
+  title = "tf-e2e-stdout"
+  type  = "org.graylog2.outputs.LoggingOutput"
+
+  configuration = jsonencode({
+    prefix = "tf-e2e: "
+  })
+}
+
+resource "graylog_stream_output" "tf_e2e" {
+  stream_id  = graylog_stream.tf_e2e.id
+  output_ids = [graylog_output.stdout.id]
+}
+
 data "graylog_input" "gelf_udp" {
   input_id = graylog_input.gelf_udp.id
 }
@@ -111,6 +125,10 @@ data "graylog_stream" "tf_e2e" {
 data "graylog_stream_rule" "tf_e2e_source" {
   stream_id = graylog_stream_rule.tf_e2e_source.stream_id
   rule_id   = graylog_stream_rule.tf_e2e_source.rule_id
+}
+
+data "graylog_output" "stdout" {
+  output_id = graylog_output.stdout.id
 }
 
 output "index_set_id" {
@@ -143,6 +161,14 @@ output "data_stream_matching_type" {
 
 output "data_stream_rule_value" {
   value = data.graylog_stream_rule.tf_e2e_source.value
+}
+
+output "output_id" {
+  value = graylog_output.stdout.id
+}
+
+output "data_output_type" {
+  value = data.graylog_output.stdout.type
 }
 
 data "graylog_saved_search" "first" {

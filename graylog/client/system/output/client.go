@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 )
@@ -32,6 +34,36 @@ type GetAllParams struct {
 	Stats bool
 }
 
+// Gets returns all outputs. Optional pagination and stats flags are supported via params.
+func (cl Client) Gets(ctx context.Context, params *GetAllParams) (map[string]interface{}, *http.Response, error) {
+	body := map[string]interface{}{}
+
+	query := url.Values{}
+	if params != nil {
+		if params.Skip > 0 {
+			query.Set("skip", strconv.Itoa(params.Skip))
+		}
+		if params.Limit > 0 {
+			query.Set("limit", strconv.Itoa(params.Limit))
+		}
+		if params.Stats {
+			query.Set("stats", "true")
+		}
+	}
+
+	path := "/system/outputs"
+	if q := query.Encode(); q != "" {
+		path += "?" + q
+	}
+
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         path,
+		ResponseBody: &body,
+	})
+	return body, resp, err
+}
+
 func (cl Client) Create(
 	ctx context.Context, data map[string]interface{},
 ) (map[string]interface{}, *http.Response, error) {
@@ -39,20 +71,11 @@ func (cl Client) Create(
 		return nil, nil, errors.New("request body is nil")
 	}
 
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": data,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
-	}
-
 	body := map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/system/outputs",
-		RequestBody:  requestData,
+		RequestBody:  data,
 		ResponseBody: &body,
 	})
 	return body, resp, err

@@ -19,6 +19,11 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 		return nil, err
 	}
 
+	delete(data, "id")
+	delete(data, "created_at")
+	delete(data, "creator_user_id")
+	delete(data, "content_pack")
+
 	return data, nil
 }
 

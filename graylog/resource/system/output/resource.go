@@ -31,6 +31,18 @@ func Resource() *schema.Resource {
 				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
+			"created_at": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"creator_user_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"content_pack": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
