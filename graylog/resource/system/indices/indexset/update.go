@@ -20,9 +20,14 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	delete(data, keyDefault)
+	delete(data, "can_be_default")
+	delete(data, "creation_date")
 
 	// Remove computed fields for Graylog 7.0 compatibility
 	util.RemoveComputedFields(data)
+
+	// Graylog 7 Update requires id in body
+	data["id"] = d.Id()
 
 	if _, _, err := cl.IndexSet.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a index set %s: %w", d.Id(), err)

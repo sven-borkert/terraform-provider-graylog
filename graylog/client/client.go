@@ -20,6 +20,7 @@ import (
 	streamRule "github.com/sven-borkert/terraform-provider-graylog/graylog/client/stream/rule"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/grok"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/indexset"
+	indextemplate "github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/template"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/input"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/input/extractor"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/input/staticfield"
@@ -46,6 +47,7 @@ type Client struct {
 	Extractor               extractor.Client
 	Grok                    grok.Client
 	IndexSet                indexset.Client
+	IndexSetTemplate        indextemplate.Client
 	Input                   input.Client
 	InputStaticField        staticfield.Client
 	LDAPSetting             setting.Client
@@ -111,6 +113,9 @@ func New(m interface{}) (Client, error) {
 			Client: httpClient,
 		},
 		IndexSet: indexset.Client{
+			Client: httpClient,
+		},
+		IndexSetTemplate: indextemplate.Client{
 			Client: httpClient,
 		},
 		Input: input.Client{
