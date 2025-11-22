@@ -36,7 +36,19 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 }
 
 func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) error {
-	attrS, err := json.Marshal(data[keyAttributes])
+	attrVal, ok := data[keyAttributes]
+	if !ok || attrVal == nil {
+		if cfg, ok := data["configuration"]; ok && cfg != nil {
+			attrVal = cfg
+		}
+	}
+	if attrVal == nil {
+		attrVal = map[string]interface{}{}
+	}
+	data[keyAttributes] = attrVal
+	delete(data, "configuration")
+
+	attrS, err := json.Marshal(attrVal)
 	if err != nil {
 		return fmt.Errorf("failed to marshal the 'attributes' as JSON: %w", err)
 	}

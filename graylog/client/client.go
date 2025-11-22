@@ -18,6 +18,7 @@ import (
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/stream/alert/condition"
 	streamOutput "github.com/sven-borkert/terraform-provider-graylog/graylog/client/stream/output"
 	streamRule "github.com/sven-borkert/terraform-provider-graylog/graylog/client/stream/rule"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/search/saved"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/grok"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/indexset"
 	indextemplate "github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/template"
@@ -61,6 +62,7 @@ type Client struct {
 	Stream                  stream.Client
 	StreamOutput            streamOutput.Client
 	StreamRule              streamRule.Client
+	SavedSearch             saved.Client
 	View                    view.Client
 	User                    user.Client
 }
@@ -155,6 +157,9 @@ func New(m interface{}) (Client, error) {
 			Client: httpClient,
 		},
 		StreamRule: streamRule.Client{
+			Client: httpClient,
+		},
+		SavedSearch: saved.Client{
 			Client: httpClient,
 		},
 		View: view.Client{

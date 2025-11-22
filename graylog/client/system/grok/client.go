@@ -26,6 +26,17 @@ func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *h
 	return body, resp, err
 }
 
+// Gets lists all grok patterns.
+func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/system/grok",
+		ResponseBody: &body,
+	})
+	return body, resp, err
+}
+
 func (cl Client) Create(
 	ctx context.Context, data map[string]interface{},
 ) (map[string]interface{}, *http.Response, error) {
@@ -33,20 +44,11 @@ func (cl Client) Create(
 		return nil, nil, errors.New("request body is nil")
 	}
 
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": data,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
-	}
-
 	body := map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/system/grok",
-		RequestBody:  requestData,
+		RequestBody:  data,
 		ResponseBody: &body,
 	})
 	return body, resp, err

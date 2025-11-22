@@ -12,6 +12,14 @@ type Client struct {
 	Client httpclient.Client
 }
 
+func wrapCreateEntityRequest(data map[string]interface{}) map[string]interface{} {
+	// Graylog Views API expects a CreateEntityRequest payload: { "entity": <ViewDTO>, "share_request": {} }
+	return map[string]interface{}{
+		"entity":        data,
+		"share_request": map[string]interface{}{},
+	}
+}
+
 func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *http.Response, error) {
 	if id == "" {
 		return nil, nil, errors.New("id is required")
@@ -37,7 +45,7 @@ func (cl Client) Create(
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/views",
-		RequestBody:  data,
+		RequestBody:  wrapCreateEntityRequest(data),
 		ResponseBody: &body,
 	})
 	return body, resp, err
@@ -57,7 +65,7 @@ func (cl Client) Update(
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "PUT",
 		Path:         "/views/" + id,
-		RequestBody:  data,
+		RequestBody:  wrapCreateEntityRequest(data),
 		ResponseBody: &body,
 	})
 	return body, resp, err
