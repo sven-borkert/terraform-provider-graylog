@@ -20,21 +20,22 @@ func create(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	ds, _, err := cl.Dashboard.Create(ctx, data)
+	ds, _, err := cl.View.Create(ctx, data)
 	if err != nil {
-		return fmt.Errorf("failed to create a dashboard: %w", err)
+		return fmt.Errorf("failed to create a dashboard view: %w", err)
 	}
 
-	a, ok := ds[keyDashboardID]
+	a, ok := ds[keyID]
 	if !ok {
-		return errors.New("response body of Graylog API is unexpected. 'dashboard_id' isn't found")
+		return errors.New("response body of Graylog API is unexpected. 'id' isn't found")
 	}
 	dID, ok := a.(string)
 	if !ok {
 		return fmt.Errorf(
-			"response body of Graylog API is unexpected. 'dashboard_id' should be string: %v", a)
+			"response body of Graylog API is unexpected. 'id' should be string: %v", a)
 	}
 
 	d.SetId(dID)
+	// log.Printf("dashboard create id=%s", dID)
 	return nil
 }

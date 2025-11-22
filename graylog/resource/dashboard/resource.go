@@ -15,22 +15,6 @@ func Resource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			// Required
-			"title": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			// Optional
-			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: schemaMap(),
 	}
 }

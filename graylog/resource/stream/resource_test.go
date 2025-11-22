@@ -49,11 +49,16 @@ func TestAccStream(t *testing.T) {
 			Path:         "/api/streams",
 			PartOfHeader: testutil.Header(),
 			BodyJSONString: `{
-  "matching_type": "AND",
-  "description": "test",
-  "title": "test",
-	"remove_matches_from_default_stream": false,
-  "index_set_id": "5e9861442ab79c0012e7d1c4"
+  "entity": {
+    "matching_type": "AND",
+    "description": "test",
+    "title": "test",
+    "remove_matches_from_default_stream": false,
+    "index_set_id": "5e9861442ab79c0012e7d1c4"
+  },
+  "share_request": {
+    "selected_grantee_capabilities": {}
+  }
 }`,
 			Test: func(t *testing.T, req *http.Request, svc flute.Service, route flute.Route) {
 				streamBody = `{

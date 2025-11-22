@@ -23,7 +23,7 @@ func update(d *schema.ResourceData, m interface{}) error {
 	// Remove computed fields for Graylog 7.0 compatibility
 	util.RemoveComputedFields(data)
 
-	if _, err := cl.Dashboard.Update(ctx, d.Id(), data); err != nil {
+	if _, _, err := cl.View.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a dashboard %s: %w", d.Id(), err)
 	}
 	return nil

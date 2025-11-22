@@ -6,7 +6,7 @@
   - `provider/`, `resource/`, `datasource/` – Terraform schemas & CRUD; maps in `resource_map.go`, `datasource_map.go`.
   - `testutil/` – helper fixtures.
 - CLI entrypoints in `cmd/`.
-- Docs in `docs/` (see `refactoring-plan-graylog7.md`, `mcp-usage.md`).
+- Docs in `docs/` (see `refactoring-plan-graylog7.md`, `mcp-usage.md`). Graylog REST API docs are cached in `docs/api-docs`; if they are missing or stale, run `docs/fetch_api_docs.py` to download fresh copies.
 - Examples: `examples/` and `example-local-usage/`.
 - Scripts: `build-local.sh`, `scripts/` (lint/test helpers).
 

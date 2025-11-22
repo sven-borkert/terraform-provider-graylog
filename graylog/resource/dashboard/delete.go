@@ -14,7 +14,7 @@ func destroy(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	if _, err := cl.Dashboard.Delete(ctx, d.Id()); err != nil {
+	if _, err := cl.View.Delete(ctx, d.Id()); err != nil {
 		return fmt.Errorf("failed to delete a dashboard %s: %w", d.Id(), err)
 	}
 	return nil

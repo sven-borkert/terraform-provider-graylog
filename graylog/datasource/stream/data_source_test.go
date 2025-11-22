@@ -11,182 +11,127 @@ import (
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/testutil"
 )
 
-func TestAccStream(t *testing.T) {
+func TestDataSourceStreamByID(t *testing.T) {
 	if err := testutil.SetEnv(); err != nil {
 		t.Fatal(err)
 	}
 
+	streamBody := `{
+  "id": "5ea26bb42ab79c0012521287",
+  "creator_user_id": "admin",
+  "outputs": [],
+  "matching_type": "AND",
+  "description": "test",
+  "created_at": "2020-04-24T04:31:48.481Z",
+  "disabled": true,
+  "rules": [],
+  "title": "test",
+  "remove_matches_from_default_stream": false,
+  "index_set_id": "5e9861442ab79c0012e7d1c4",
+  "is_default": false
+}`
+
 	getRoute := flute.Route{
-		Name: "get streams",
+		Name: "get stream by id",
 		Matcher: flute.Matcher{
 			Method: "GET",
+			Path:   "/api/streams/5ea26bb42ab79c0012521287",
 		},
 		Tester: flute.Tester{
-			Path:         "/api/streams",
 			PartOfHeader: testutil.Header(),
 		},
 		Response: flute.Response{
 			Response: func(req *http.Request) (*http.Response, error) {
 				return &http.Response{
 					StatusCode: 200,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-  "total": 3,
-  "streams": [
-    {
-      "id": "000000000000000000000001",
-      "creator_user_id": "local:admin",
-      "outputs": [],
-      "matching_type": "AND",
-      "description": "Stream containing all messages",
-      "created_at": "2020-04-28T12:08:21.010Z",
-      "disabled": false,
-      "rules": [],
-      "alert_conditions": [],
-      "alert_receivers": {
-        "emails": [],
-        "users": []
-      },
-      "title": "All messages",
-      "content_pack": null,
-      "remove_matches_from_default_stream": false,
-      "index_set_id": "5ea81cb42ab79c00129dbe58",
-      "is_default": true
-    },
-    {
-      "id": "000000000000000000000003",
-      "creator_user_id": "admin",
-      "outputs": [],
-      "matching_type": "AND",
-      "description": "Stream containing all system events created by Graylog",
-      "created_at": "2020-04-28T12:08:32.193Z",
-      "disabled": false,
-      "rules": [],
-      "alert_conditions": [],
-      "alert_receivers": {
-        "emails": [],
-        "users": []
-      },
-      "title": "All system events",
-      "content_pack": null,
-      "remove_matches_from_default_stream": true,
-      "index_set_id": "5ea81cc02ab79c00129dbf1f",
-      "is_default": false
-    },
-    {
-      "id": "000000000000000000000002",
-      "creator_user_id": "admin",
-      "outputs": [],
-      "matching_type": "AND",
-      "description": "Stream containing all events created by Graylog",
-      "created_at": "2020-04-28T12:08:32.186Z",
-      "disabled": false,
-      "rules": [],
-      "alert_conditions": [],
-      "alert_receivers": {
-        "emails": [],
-        "users": []
-      },
-      "title": "All events",
-      "content_pack": null,
-      "remove_matches_from_default_stream": true,
-      "index_set_id": "5ea81cc02ab79c00129dbf1c",
-      "is_default": false
-    }
-  ]
-}`)),
+					Body:       ioutil.NopCloser(strings.NewReader(streamBody)),
 				}, nil
 			},
 		},
 	}
 
-	readStep := resource.TestStep{
-		ResourceName: "data.graylog_stream.all_events",
-		PreConfig: func() {
-			testutil.SetHTTPClient(t, getRoute)
-		},
-		Config: `
-data "graylog_stream" "all_events" {
-  title = "All events"
-}
-`,
-		Check: resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("data.graylog_stream.all_events", "title", "All events"),
-			resource.TestCheckResourceAttr("data.graylog_stream.all_events", "description", "Stream containing all events created by Graylog"),
-		),
-	}
-
 	resource.Test(t, resource.TestCase{
 		Providers: testutil.SingleDataSourceProviders("graylog_stream", DataSource()),
 		Steps: []resource.TestStep{
-			readStep,
+			{
+				PreConfig: func() { testutil.SetHTTPClient(t, getRoute) },
+				Config: `
+data "graylog_stream" "by_id" {
+  stream_id = "5ea26bb42ab79c0012521287"
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.graylog_stream.by_id", "stream_id", "5ea26bb42ab79c0012521287"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_id", "title", "test"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_id", "matching_type", "AND"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_id", "index_set_id", "5e9861442ab79c0012e7d1c4"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_id", "disabled", "true"),
+				),
+			},
 		},
 	})
 }
 
-func TestAccStream_byStreamID(t *testing.T) {
+func TestDataSourceStreamByTitle(t *testing.T) {
 	if err := testutil.SetEnv(); err != nil {
 		t.Fatal(err)
 	}
 
-	getRoute := flute.Route{
-		Name: "get streams",
+	listBody := `{
+  "total": 1,
+  "streams": [
+    {
+      "id": "5ea26bb42ab79c0012521287",
+      "creator_user_id": "admin",
+      "outputs": [],
+      "matching_type": "AND",
+      "description": "test",
+      "created_at": "2020-04-24T04:31:48.481Z",
+      "disabled": false,
+      "rules": [],
+      "title": "test",
+      "remove_matches_from_default_stream": false,
+      "index_set_id": "5e9861442ab79c0012e7d1c4",
+      "is_default": false
+    }
+  ]
+}`
+
+	getList := flute.Route{
+		Name: "list streams",
 		Matcher: flute.Matcher{
 			Method: "GET",
+			Path:   "/api/streams",
 		},
 		Tester: flute.Tester{
-			Path:         "/api/streams/000000000000000000000003",
 			PartOfHeader: testutil.Header(),
 		},
 		Response: flute.Response{
 			Response: func(req *http.Request) (*http.Response, error) {
 				return &http.Response{
 					StatusCode: 200,
-					Body: ioutil.NopCloser(strings.NewReader(`{
-  "id": "000000000000000000000003",
-  "creator_user_id": "admin",
-  "outputs": [],
-  "matching_type": "AND",
-  "description": "Stream containing all system events created by Graylog",
-  "created_at": "2020-04-28T12:08:32.193Z",
-  "disabled": false,
-  "rules": [],
-  "alert_conditions": [],
-  "alert_receivers": {
-    "emails": [],
-    "users": []
-  },
-  "title": "All system events",
-  "content_pack": null,
-  "remove_matches_from_default_stream": true,
-  "index_set_id": "5ea81cc02ab79c00129dbf1f",
-  "is_default": false
-}
-`)),
+					Body:       ioutil.NopCloser(strings.NewReader(listBody)),
 				}, nil
 			},
 		},
 	}
 
-	readStep := resource.TestStep{
-		ResourceName: "data.graylog_stream.all_system_events",
-		PreConfig: func() {
-			testutil.SetHTTPClient(t, getRoute)
-		},
-		Config: `
-data "graylog_stream" "all_system_events" {
-  stream_id = "000000000000000000000003"
-}
-`,
-		Check: resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("data.graylog_stream.all_system_events", "title", "All system events"),
-			resource.TestCheckResourceAttr("data.graylog_stream.all_system_events", "description", "Stream containing all system events created by Graylog"),
-		),
-	}
-
 	resource.Test(t, resource.TestCase{
 		Providers: testutil.SingleDataSourceProviders("graylog_stream", DataSource()),
 		Steps: []resource.TestStep{
-			readStep,
+			{
+				PreConfig: func() { testutil.SetHTTPClient(t, getList) },
+				Config: `
+data "graylog_stream" "by_title" {
+  title = "test"
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.graylog_stream.by_title", "stream_id", "5ea26bb42ab79c0012521287"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_title", "disabled", "false"),
+					resource.TestCheckResourceAttr("data.graylog_stream.by_title", "matching_type", "AND"),
+				),
+			},
 		},
 	})
 }

@@ -1,8 +1,7 @@
-package dashboard
+package rule
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
@@ -10,16 +9,24 @@ import (
 )
 
 func read(d *schema.ResourceData, m interface{}) error {
-	// log.Printf("dashboard read id=%s", d.Id())
 	ctx := context.Background()
 	cl, err := client.New(m)
 	if err != nil {
 		return err
 	}
-	data, resp, err := cl.View.Get(ctx, d.Id())
+
+	sID := d.Get(keyStreamID).(string)
+	rID := d.Get(keyRuleID).(string)
+
+	data, resp, err := cl.StreamRule.Get(ctx, sID, rID)
 	if err != nil {
 		return util.HandleGetResourceError(
-			d, resp, fmt.Errorf("failed to get a dashboard %s: %w", d.Id(), err))
+			d, resp, err,
+		)
 	}
-	return setDataToResourceData(d, data)
+
+	if err := setDataToResourceData(d, data); err != nil {
+		return err
+	}
+	return nil
 }

@@ -10,6 +10,9 @@
 - Local venv with proxy: `.venv/` contains `mcp-proxy` (installed via `python3 -m venv .venv && .venv/bin/pip install mcp-proxy`).
 - Codex config (`~/.codex/config.toml`):
   ```toml
+  [features]
+  rmcp_client = true  # replaces deprecated experimental_use_rmcp_client
+
   [mcp_servers.graylog]
   command = "/Users/borkert/Repos/terraform-provider-graylog/.venv/bin/mcp-proxy"
   args = [
@@ -43,7 +46,7 @@ curl -k -H "Content-Type: application/json" \
 Expected: JSON with version/hostname. Through Codex, ask to call MCP tool `get_system_status` or `list_index_sets`.
 
 ## Tips & Troubleshooting
-- If Codex fails: ensure `experimental_use_rmcp_client = true` is set (newer builds require it), and that the proxy path is correct.
+- If Codex fails: ensure the `rmcp_client` feature flag is enabled (set `[features].rmcp_client = true` in `config.toml` or start Codex with `--enable rmcp_client`); the old `experimental_use_rmcp_client` flag is deprecated.
 - If you get “Method not allowed” or metadata errors, confirm you’re using `tools/call` and POST, not GET.
 - Permissions: token must have read access to index sets/streams; otherwise tools return empty sets.
 

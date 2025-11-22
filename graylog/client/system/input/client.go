@@ -26,6 +26,17 @@ func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *h
 	return body, resp, err
 }
 
+// Gets returns the list of inputs (InputSummary list).
+func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/system/inputs",
+		ResponseBody: &body,
+	})
+	return body, resp, err
+}
+
 func renameFieldAttributesToConfiguration(input map[string]interface{}) {
 	// change attributes to configuration
 	// https://github.com/Graylog2/graylog2-server/issues/3480
@@ -44,20 +55,11 @@ func (cl Client) Create(
 
 	renameFieldAttributesToConfiguration(input)
 
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": input,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
-	}
-
 	body := map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/system/inputs",
-		RequestBody:  requestData,
+		RequestBody:  input,
 		ResponseBody: &body,
 	})
 	return body, resp, err
