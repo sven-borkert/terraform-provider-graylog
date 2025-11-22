@@ -21,6 +21,7 @@
 - Run `gofmt`/`goimports` on change; prefer explicit struct field names in JSON payloads.
 - Resource/data source names match Graylog REST nouns; keep consistent prefixes (`graylog_*`).
 - Errors: wrap with context via `fmt.Errorf("context: %w", err)`.
+- Dashboards (Graylog 7): implemented via Views API with `type=DASHBOARD`; widget mapping/positions/timerange must be JSON strings; saved search datasource returns `search_id`/`state_id` for wiring; example `examples/graylog7-e2e` uses a time pivot + count() aggregation to avoid empty widgets.
 
 ## Testing Guidelines
 - Prefer table-driven tests for converters and client logic.
