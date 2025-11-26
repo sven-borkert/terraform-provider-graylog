@@ -256,3 +256,59 @@ resource "graylog_dashboard" "tf_e2e" {
     })
   }
 }
+
+# Dashboard data source - lookup by ID
+data "graylog_dashboard" "tf_e2e_by_id" {
+  dashboard_id = graylog_dashboard.tf_e2e.id
+}
+
+# Dashboard data source - lookup by title
+data "graylog_dashboard" "tf_e2e_by_title" {
+  title = graylog_dashboard.tf_e2e.title
+}
+
+output "dashboard_id" {
+  value = graylog_dashboard.tf_e2e.id
+}
+
+output "data_dashboard_by_id_title" {
+  value = data.graylog_dashboard.tf_e2e_by_id.title
+}
+
+output "data_dashboard_by_title_owner" {
+  value = data.graylog_dashboard.tf_e2e_by_title.owner
+}
+
+# User resource
+resource "graylog_user" "tf_e2e" {
+  username           = "tf-e2e-user"
+  email              = "tf-e2e@example.com"
+  first_name         = "Terraform"
+  last_name          = "E2E Test User"
+  password           = "TestPassword123"
+  roles              = ["Reader"]
+  timezone           = "UTC"
+  session_timeout_ms = 3600000
+}
+
+# User data source - lookup by username
+data "graylog_user" "tf_e2e_by_username" {
+  username = graylog_user.tf_e2e.username
+}
+
+# User data source - lookup existing admin user
+data "graylog_user" "admin" {
+  username = "admin"
+}
+
+output "user_id" {
+  value = graylog_user.tf_e2e.user_id
+}
+
+output "data_user_by_username_email" {
+  value = data.graylog_user.tf_e2e_by_username.email
+}
+
+output "data_admin_user_roles" {
+  value = data.graylog_user.admin.roles
+}

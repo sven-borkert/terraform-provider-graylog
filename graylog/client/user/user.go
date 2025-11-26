@@ -28,24 +28,42 @@ func (cl Client) Get(
 	return body, resp, err
 }
 
+func (cl Client) GetByID(
+	ctx context.Context, id string,
+) (map[string]interface{}, *http.Response, error) {
+	if id == "" {
+		return nil, nil, errors.New("user id is required")
+	}
+
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/users/id/" + id,
+		ResponseBody: &body,
+	})
+	return body, resp, err
+}
+
+func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/users",
+		ResponseBody: &body,
+	})
+	return body, resp, err
+}
+
 func (cl Client) Create(ctx context.Context, user interface{}) (*http.Response, error) {
 	if user == nil {
 		return nil, errors.New("request body is nil")
 	}
 
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": user,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
-	}
-
+	// Note: User API does NOT use entity wrapping like other Graylog 7.0 APIs
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:      "POST",
 		Path:        "/users",
-		RequestBody: requestData,
+		RequestBody: user,
 	})
 	return resp, err
 }
