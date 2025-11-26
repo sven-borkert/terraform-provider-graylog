@@ -27,7 +27,7 @@ venv-install: venv
 	$(VENV)/bin/pip install requests
 	@echo "Venv ready at $(VENV)"
 
-.PHONY: fmt test acc-test
+.PHONY: fmt lint test acc-test
 
 fmt:
 	@if command -v gofumpt >/dev/null 2>&1; then \
@@ -35,6 +35,9 @@ fmt:
 	else \
 	  gofmt -w $$(git ls-files '*.go'); \
 	fi
+
+lint:
+	golangci-lint run
 
 test:
 	go test -race -covermode=atomic ./...
