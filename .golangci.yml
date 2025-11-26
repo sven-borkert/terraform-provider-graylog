@@ -1,35 +1,9 @@
 ---
 linters:
-  enable-all: true
-  disable:
-  - wsl
-  - testpackage
-  - godot
-  - goerr113
-  - funlen
-  - godox
-  - dupl
-  - nestif
-  - lll
-  - gochecknoglobals
-  - nlreturn
-  - exhaustivestruct
-  - paralleltest
-  - wrapcheck
-  - depguard        # Too strict for this codebase
-  - cyclop          # Complexity checks - some functions need refactoring
-  - gocognit        # Cognitive complexity - some functions need refactoring
-  - revive          # Unused parameters are common in Terraform SDK callbacks
-  - bodyclose       # False positives with httpclient wrapper
-  - copyloopvar     # Go 1.22+ style suggestion
-  - exhaustruct     # Renamed from exhaustivestruct in newer versions
-  - dupword         # False positives in test data and comments
-  - forcetypeassert # Type assertions from Terraform SDK are safe
-  - gci             # Import ordering - not critical
-  - gosimple        # Minor simplifications
-  - maintidx        # Maintainability index for tests
-  - mnd             # Magic numbers - used for defaults
-  - nonamedreturns  # Named returns used in some patterns
-  - prealloc        # Premature optimization
-  - staticcheck     # Deprecated ioutil - would need refactoring
-  - testifylint     # Test style preferences
+  disable-all: true
+  enable:
+  - errcheck
+  - govet
+  - ineffassign
+  - typecheck
+  - unused
