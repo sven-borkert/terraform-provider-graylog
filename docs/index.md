@@ -157,7 +157,7 @@ Version 3.0.0+ of this provider includes full support for Graylog 7.0's API chan
 - **Computed Field Management** - Read-only fields are automatically removed from updates
 - **Zero Configuration Changes** - Your existing Terraform configurations work without modification
 
-See the [Migration Guide](guides/migration_guide_v7) for upgrading from earlier versions.
+See the [Changelog](changelog) for migration notes when upgrading from earlier versions.
 
 ## Available Resources
 
@@ -213,7 +213,6 @@ See the [Migration Guide](guides/migration_guide_v7) for upgrading from earlier 
 
 ### Getting Started
 - **[Local Testing Guide](guides/local_usage)** - Test the provider locally
-- **[Migration Guide](guides/migration_guide_v7)** - Upgrade to Graylog 7.0
 - **[JSON String Attributes](guides/json-string-attribute)** - Working with JSON configurations
 
 ### Reference

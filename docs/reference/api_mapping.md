@@ -520,30 +520,4 @@ func create(d *schema.ResourceData, m interface{}) error {
 
 ---
 
-## 9. VALIDATION CHECKLIST
-
-For each resource requiring updates:
-
-- [ ] Update client Create method to wrap entity
-- [ ] Test create operation against Graylog 7.0
-- [ ] Verify read operation still works
-- [ ] Verify update operation still works
-- [ ] Verify delete operation still works
-- [ ] Update tests with new request structure
-- [ ] Update documentation with any breaking changes
-- [ ] Verify unknown properties are not sent
-
----
-
-## 10. NEXT STEPS
-
-1. ✅ Create MASTER_TODO.md with specific tasks for each resource
-2. ⏳ Start with HIGH priority resources (streams, dashboards, events)
-3. ⏳ Test each resource against live Graylog 7.0 instance or API browser
-4. ⏳ Update client implementations first, then verify resource behavior
-5. ⏳ Update all tests to match new structure
-6. ⏳ Create migration guide for users
-
----
-
 **END OF API MAPPING**

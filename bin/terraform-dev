@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Wrapper script to run Terraform with the local dev provider.
+# This creates a .terraformrc-dev config file and sets TF_CLI_CONFIG_FILE
+# to use the locally built provider instead of the registry version.
+#
+
+set -e
+
+# Get the project root directory (parent of bin/)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Path to the dev config file
+CONFIG_FILE="$PROJECT_ROOT/.terraformrc-dev"
+
+# Path to the locally built provider binary
+PROVIDER_BIN_DIR="$PROJECT_ROOT/bin"
+
+# Create the dev config file
+cat > "$CONFIG_FILE" << EOF
+provider_installation {
+  dev_overrides {
+    "sven-borkert/graylog" = "$PROVIDER_BIN_DIR"
+  }
+  direct {}
+}
+EOF
+
+# Run terraform with the dev config
+export TF_CLI_CONFIG_FILE="$CONFIG_FILE"
+exec terraform "$@"

@@ -14,3 +14,4 @@ examples/graylog7-e2e/graylog.auto.tfvars
 example-local-usage
 .venv
 docs/api-docs
+.terraformrc-dev

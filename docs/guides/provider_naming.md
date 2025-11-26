@@ -27,7 +27,7 @@ When installed locally, the provider name appears in the directory path:
                         └── namespace ──┘  └─name─┘
 ```
 
-- **Namespace**: `terraform-provider-graylog` (organization/publisher)
+- **Namespace**: `sven-borkert` (organization/publisher)
 - **Name**: `graylog` (the actual provider name)
 
 ## 3. Terraform Configuration
@@ -116,10 +116,11 @@ If you wanted to change the provider name from "graylog" to something else, you 
 ## Current Setup Summary
 
 - **Provider Name**: `graylog`
-- **Namespace**: `terraform-provider-graylog`
+- **Namespace**: `sven-borkert`
 - **Full Source**: `sven-borkert/graylog`
 - **Binary Name**: `terraform-provider-graylog`
 - **Go Module**: `github.com/sven-borkert/terraform-provider-graylog` (unrelated to provider name)
+- **Registry URL**: `registry.terraform.io/providers/sven-borkert/graylog`
 
 ## Important Notes
 

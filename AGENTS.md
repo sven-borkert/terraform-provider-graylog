@@ -5,23 +5,34 @@
   - `client/`, `config/`, `convert/`, `util/` – shared client/helpers.
   - `provider/`, `resource/`, `datasource/` – Terraform schemas & CRUD; maps in `resource_map.go`, `datasource_map.go`.
   - `testutil/` – helper fixtures.
-- CLI entrypoints in `cmd/`.
-- Docs in `docs/` (see `refactoring-plan-graylog7.md`, `mcp-usage.md`). Graylog REST API docs are cached in `docs/api-docs`; if they are missing or stale, run `docs/fetch_api_docs.py` to download fresh copies.
-- Examples: `examples/` and `example-local-usage/`.
-- Scripts: `build-local.sh`, `scripts/` (lint/test helpers).
+- CLI entrypoint in `cmd/terraform-provider-graylog/`.
+- Documentation in `docs/` (resources, data sources). Graylog REST API docs can be cached in `docs/api-docs`; if missing or stale, run `docs/fetch_api_docs.py` to download fresh copies.
+- Examples: `examples/graylog7-e2e/` (current Graylog 7 testing), `examples/v0.12/` (legacy reference for future refactoring).
 
 ## Build, Test, and Development Commands
-- `go test ./...` – run unit tests.
-- `./build-local.sh` – build provider binary into `./terraform-provider-graylog` (used for local Terraform testing).
-- `go test ./graylog/provider -run TestAcc` (once acceptance tests are added) – targeted acceptance/API tests.
-- `terraform init/plan/apply` inside example projects with local provider override (see docs).
+- `make build` – build provider binary into `bin/`.
+- `make test` – run unit tests with race detection.
+- `make acc-test` – run acceptance tests (requires `TF_ACC=1` and running Graylog instance).
+- `make lint` – run golangci-lint.
+- `make fmt` – format Go code with gofumpt/gofmt.
+- `bin/terraform-dev` – wrapper script to run Terraform with local provider override.
+
+## Local Development Workflow
+1. Build the provider: `make build`
+2. Use `bin/terraform-dev` instead of `terraform` to test with local binary:
+   ```bash
+   cd examples/graylog7-e2e
+   ../../bin/terraform-dev plan
+   ../../bin/terraform-dev apply
+   ```
+3. To use the registry version instead, use regular `terraform` commands.
 
 ## Coding Style & Naming Conventions
-- Go 1.22+ idioms; 2-space indentation (Go fmt defaults).
-- Run `gofmt`/`goimports` on change; prefer explicit struct field names in JSON payloads.
+- Go 1.22+ idioms; standard Go formatting.
+- Run `make fmt` before committing; prefer explicit struct field names in JSON payloads.
 - Resource/data source names match Graylog REST nouns; keep consistent prefixes (`graylog_*`).
 - Errors: wrap with context via `fmt.Errorf("context: %w", err)`.
-- Dashboards (Graylog 7): implemented via Views API with `type=DASHBOARD`; widget mapping/positions/timerange must be JSON strings; saved search datasource returns `search_id`/`state_id` for wiring; example `examples/graylog7-e2e` uses a time pivot + count() aggregation to avoid empty widgets.
+- Dashboards (Graylog 7): implemented via Views API with `type=DASHBOARD`; widget mapping/positions/timerange must be JSON strings; saved search datasource returns `search_id`/`state_id` for wiring.
 
 ## Testing Guidelines
 - Prefer table-driven tests for converters and client logic.
@@ -37,4 +48,3 @@
 - Never commit tokens; `.mcp/` and `.tfvars` are ignored by default. Use `graylog.auto.tfvars` locally for credentials.
 - TLS: example curl uses `-k` only for self-signed labs—avoid in production.
 - Use least-privilege Graylog users for testing; rotate tokens after test runs.
-- MCP usage policy: MCP is read-only; use it only to inspect Graylog state. All mutations must go through Terraform resources/providers, not MCP calls.
