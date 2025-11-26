@@ -14,5 +14,12 @@ linters:
   - gochecknoglobals
   - nlreturn
   - exhaustivestruct
-  - paralleltest # TODO
-  - wrapcheck # TODO
+  - paralleltest
+  - wrapcheck
+  - depguard        # Too strict for this codebase
+  - cyclop          # Complexity checks - some functions need refactoring
+  - gocognit        # Cognitive complexity - some functions need refactoring
+  - revive          # Unused parameters are common in Terraform SDK callbacks
+  - bodyclose       # False positives with httpclient wrapper
+  - copyloopvar     # Go 1.22+ style suggestion
+  - exhaustruct     # Renamed from exhaustivestruct in newer versions
