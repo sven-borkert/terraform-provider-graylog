@@ -28,6 +28,42 @@ func (cl Client) Get(
 	return body, resp, err
 }
 
+func (cl Client) Gets(
+	ctx context.Context,
+) ([]map[string]interface{}, *http.Response, error) {
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/roles",
+		ResponseBody: &body,
+	})
+	if err != nil {
+		return nil, resp, err
+	}
+
+	// Response contains "roles" array
+	rolesRaw, ok := body["roles"]
+	if !ok {
+		return nil, resp, errors.New("response does not contain 'roles' key")
+	}
+
+	rolesArray, ok := rolesRaw.([]interface{})
+	if !ok {
+		return nil, resp, errors.New("roles is not an array")
+	}
+
+	roles := make([]map[string]interface{}, len(rolesArray))
+	for i, r := range rolesArray {
+		roleMap, ok := r.(map[string]interface{})
+		if !ok {
+			return nil, resp, errors.New("role is not a map")
+		}
+		roles[i] = roleMap
+	}
+
+	return roles, resp, nil
+}
+
 func (cl Client) Create(
 	ctx context.Context, role interface{},
 ) (map[string]interface{}, *http.Response, error) {
@@ -35,20 +71,12 @@ func (cl Client) Create(
 		return nil, nil, errors.New("request body is nil")
 	}
 
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": role,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
-	}
-
+	// Note: Role API does NOT use entity wrapping - takes RoleResponse directly
 	body := map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/roles",
-		RequestBody:  requestData,
+		RequestBody:  role,
 		ResponseBody: &body,
 	})
 	return body, resp, err
