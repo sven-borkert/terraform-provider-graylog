@@ -15,6 +15,7 @@ import (
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/datasource/system/output"
 	ppipeline "github.com/sven-borkert/terraform-provider-graylog/graylog/datasource/system/pipeline/pipeline"
 	ppipelinerule "github.com/sven-borkert/terraform-provider-graylog/graylog/datasource/system/pipeline/rule"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/datasource/user"
 )
 
 var dataSourcesMap = map[string]*schema.Resource{
@@ -33,4 +34,5 @@ var dataSourcesMap = map[string]*schema.Resource{
 	"graylog_output":              output.DataSource(),
 	"graylog_index_set_template":  indextemplate.DataSourceBuiltIn(),
 	"graylog_index_set_templates": indextemplate.DataSourceList(),
+	"graylog_user":                user.DataSource(),
 }

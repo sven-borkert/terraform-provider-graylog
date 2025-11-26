@@ -10,22 +10,40 @@ func DataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"dashboard_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the dashboard. Either dashboard_id or title must be set.",
 			},
 			"title": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The title of the dashboard. Either dashboard_id or title must be set.",
 			},
-
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The description of the dashboard.",
 			},
-
+			"summary": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The summary of the dashboard.",
+			},
+			"owner": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The owner of the dashboard.",
+			},
+			"search_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The search ID associated with the dashboard.",
+			},
 			"created_at": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation timestamp of the dashboard.",
 			},
 		},
 	}

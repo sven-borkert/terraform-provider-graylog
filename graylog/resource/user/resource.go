@@ -35,9 +35,17 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"full_name": {
+			"first_name": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"last_name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"full_name": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"permissions": {
 				Type:     schema.TypeSet,
@@ -45,10 +53,6 @@ func Resource() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			// "preferences": {
-			//   "updateUnfocussed": false,
-			//   "enableSmartSearch": true
-			// }
 			"timezone": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -64,7 +68,6 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			// startpage: null
 			"roles": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -84,6 +87,15 @@ func Resource() *schema.Resource {
 			},
 			"client_address": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"account_status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"service_account": {
+				Type:     schema.TypeBool,
+				Optional: true,
 				Computed: true,
 			},
 		},

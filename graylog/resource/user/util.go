@@ -6,14 +6,17 @@ import (
 )
 
 const (
-	keyUsername      = "username"
-	keyPermissions   = "permissions"
-	keyClientAddress = "client_address"
-	keyExternal      = "external"
-	keyLastActivity  = "last_activity"
-	keyUserID        = "user_id"
-	keySessionActive = "session_active"
-	keyReadOnly      = "read_only"
+	keyUsername       = "username"
+	keyPermissions    = "permissions"
+	keyClientAddress  = "client_address"
+	keyExternal       = "external"
+	keyLastActivity   = "last_activity"
+	keyUserID         = "user_id"
+	keySessionActive  = "session_active"
+	keyReadOnly       = "read_only"
+	keyFullName       = "full_name"
+	keyAccountStatus  = "account_status"
+	keyServiceAccount = "service_account"
 )
 
 func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -22,12 +25,15 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 		return nil, err
 	}
 
+	// Remove computed fields that should not be sent to the API
 	delete(data, keyClientAddress)
 	delete(data, keyExternal)
 	delete(data, keyLastActivity)
 	delete(data, keySessionActive)
 	delete(data, keyReadOnly)
 	delete(data, keyUserID)
+	delete(data, keyFullName) // full_name is computed from first_name and last_name
+	delete(data, keyAccountStatus)
 
 	return data, nil
 }
