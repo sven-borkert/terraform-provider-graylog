@@ -1,10 +1,9 @@
 # terraform-provider-graylog
 
-[![Build Status](https://github.com/terraform-provider-graylog/terraform-provider-graylog/workflows/CI/badge.svg)](https://github.com/terraform-provider-graylog/terraform-provider-graylog/actions)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/68758b442c809c2fe7cf/test_coverage)](https://codeclimate.com/github/terraform-provider-graylog/terraform-provider-graylog/test_coverage)
-[![Go Report Card](https://goreportcard.com/badge/github.com/terraform-provider-graylog/terraform-provider-graylog)](https://goreportcard.com/report/github.com/terraform-provider-graylog/terraform-provider-graylog)
-[![GitHub last commit](https://img.shields.io/github/last-commit/terraform-provider-graylog/terraform-provider-graylog.svg)](https://github.com/terraform-provider-graylog/terraform-provider-graylog)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/terraform-provider-graylog/terraform-provider-graylog/master/LICENSE)
+[![Build Status](https://github.com/sven-borkert/terraform-provider-graylog/workflows/CI/badge.svg)](https://github.com/sven-borkert/terraform-provider-graylog/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sven-borkert/terraform-provider-graylog)](https://goreportcard.com/report/github.com/sven-borkert/terraform-provider-graylog)
+[![GitHub last commit](https://img.shields.io/github/last-commit/sven-borkert/terraform-provider-graylog.svg)](https://github.com/sven-borkert/terraform-provider-graylog)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/sven-borkert/terraform-provider-graylog/master/LICENSE)
 
 Terraform Provider for [Graylog](https://docs.graylog.org/)
 
@@ -25,7 +24,7 @@ Terraform Provider for [Graylog](https://docs.graylog.org/)
 terraform {
   required_providers {
     graylog = {
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       version = "~> 2.0"
     }
   }
@@ -40,8 +39,8 @@ provider "graylog" {
 
 ## Documentation
 
-- [Provider Documentation](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
-- [Terraform Registry](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
+- [Provider Documentation](https://registry.terraform.io/providers/sven-borkert/graylog/latest/docs)
+- [Terraform Registry](https://registry.terraform.io/providers/sven-borkert/graylog/latest)
 - [Migration Guide to Graylog 7.0](MIGRATION_GUIDE_V7.md)
 - [API Mapping for Graylog 7.0](API_MAPPING.md)
 

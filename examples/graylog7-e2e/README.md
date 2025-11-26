@@ -13,7 +13,7 @@ This folder will hold the Terraform smoke/E2E setup for the Graylog provider.
    ```hcl
    provider_installation {
      dev_overrides {
-       "terraform-provider-graylog/graylog" = "<REPO>/bin"
+       "sven-borkert/graylog" = "<REPO>/bin"
      }
      direct {}
    }

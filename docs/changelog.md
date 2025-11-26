@@ -72,7 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    terraform {
      required_providers {
        graylog = {
-         source  = "terraform-provider-graylog/graylog"
+         source  = "sven-borkert/graylog"
          version = "~> 3.0"
        }
      }
@@ -114,11 +114,11 @@ Previous versions supported Graylog 3.x through 6.x. See git history for detaile
 
 ## Links
 
-- [GitHub Repository](https://github.com/terraform-provider-graylog/terraform-provider-graylog)
-- [Terraform Registry](https://registry.terraform.io/providers/terraform-provider-graylog/graylog)
+- [GitHub Repository](https://github.com/sven-borkert/terraform-provider-graylog)
+- [Terraform Registry](https://registry.terraform.io/providers/sven-borkert/graylog)
 - [Graylog Documentation](https://go2docs.graylog.org/current/)
 - [Graylog 7.0 Upgrade Guide](https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm)
-- [Provider Documentation](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
+- [Provider Documentation](https://registry.terraform.io/providers/sven-borkert/graylog/latest/docs)
 
 ---
 

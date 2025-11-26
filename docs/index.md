@@ -25,7 +25,7 @@ The Graylog provider enables Terraform to manage [Graylog](https://www.graylog.o
 terraform {
   required_providers {
     graylog = {
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       version = "~> 3.0"
     }
   }
@@ -218,33 +218,30 @@ See the [Migration Guide](guides/migration_guide_v7) for upgrading from earlier 
 
 ### Reference
 - **[API Mapping](reference/api_mapping)** - Graylog API endpoint documentation
-- **[Resource Inventory](reference/inventory)** - Complete component inventory
 - **[Changelog](changelog)** - Version history and changes
 - **[Provider Naming](guides/provider_naming)** - Naming conventions
 
 ### Examples
-- **[Local Usage Examples](../../example-local-usage/)** - Complete working examples with multiple testing methods
+- **[Examples Directory](../examples/graylog7-e2e/)** - Working examples for testing
 
 ## Development
 
 ### Local Testing
 
-See the comprehensive [example-local-usage](../../example-local-usage/) directory for:
-- Multiple testing methods (standard, developer override, Makefile)
-- Build scripts and helper tools
-- Import examples and data source queries
-- Complete documentation
-
 Quick start:
 ```bash
-cd example-local-usage/
-make setup    # Build provider and configure
-make plan     # Test with terraform plan
+# Build the provider
+make build
+
+# Install to local mirror
+make dev-install
 ```
+
+See the [Local Usage Guide](guides/local_usage) for detailed testing methods.
 
 ### Contributing
 
-Contributions are welcome! Please see the [GitHub repository](https://github.com/terraform-provider-graylog/terraform-provider-graylog) for:
+Contributions are welcome! Please see the [GitHub repository](https://github.com/sven-borkert/terraform-provider-graylog) for:
 - Issue reporting
 - Feature requests
 - Pull requests
@@ -253,10 +250,10 @@ Contributions are welcome! Please see the [GitHub repository](https://github.com
 ## Support
 
 ### Resources
-- **[GitHub Issues](https://github.com/terraform-provider-graylog/terraform-provider-graylog/issues)** - Bug reports and feature requests
+- **[GitHub Issues](https://github.com/sven-borkert/terraform-provider-graylog/issues)** - Bug reports and feature requests
 - **[Graylog Community](https://community.graylog.org/)** - Community support and discussions
 - **[Graylog Documentation](https://go2docs.graylog.org/)** - Official Graylog documentation
-- **[Terraform Registry](https://registry.terraform.io/providers/terraform-provider-graylog/graylog)** - Provider documentation
+- **[Terraform Registry](https://registry.terraform.io/providers/sven-borkert/graylog)** - Provider documentation
 
 ### Graylog 7.0 Resources
 - **[Upgrade Guide](https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm)** - Official upgrade guide

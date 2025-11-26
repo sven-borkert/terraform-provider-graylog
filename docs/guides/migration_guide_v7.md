@@ -80,7 +80,7 @@ Graylog 7.0 now rejects API requests containing unknown or read-only JSON proper
 terraform {
   required_providers {
     graylog = {
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       version = "~> 3.0"  # Update to v3.0.0+
     }
   }
@@ -254,7 +254,7 @@ If Graylog 7.0 is stable but provider has issues:
 terraform {
   required_providers {
     graylog = {
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       version = "= 1.15.0"  # Last v1.x version
     }
   }
@@ -358,7 +358,7 @@ Before completing migration:
 
 ### Provider Issues
 
-Report issues at: https://github.com/terraform-provider-graylog/terraform-provider-graylog/issues
+Report issues at: https://github.com/sven-borkert/terraform-provider-graylog/issues
 
 ### Graylog Issues
 
@@ -372,7 +372,7 @@ Report issues at: https://github.com/terraform-provider-graylog/terraform-provid
 
 - [Graylog 7.0 Release Notes](https://go2docs.graylog.org/current/changelogs/changelog.html)
 - [Graylog 7.0 Upgrade Guide](https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm)
-- [Provider Documentation](https://registry.terraform.io/providers/terraform-provider-graylog/graylog/latest/docs)
+- [Provider Documentation](https://registry.terraform.io/providers/sven-borkert/graylog/latest/docs)
 - [API Changes Documentation](API_MAPPING.md)
 
 ---

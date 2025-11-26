@@ -15,19 +15,16 @@ docs/
 │   └── json-string-attribute.md     # Working with JSON attributes
 ├── reference/                        # Technical reference
 │   ├── architecture.md              # Provider architecture with diagrams
-│   ├── api_mapping.md               # API endpoint documentation
-│   └── inventory.md                 # Component inventory
+│   └── api_mapping.md               # API endpoint documentation
 ├── resources/                        # Resource documentation
 │   ├── stream.md
 │   ├── input.md
 │   ├── pipeline.md
 │   └── ...                          # 25+ resource types
-├── data-sources/                     # Data source documentation
-│   ├── stream.md
-│   ├── index_set.md
-│   └── ...
-└── development/                      # Development documentation
-    └── project_summary.md           # Project completion summary
+└── data-sources/                     # Data source documentation
+    ├── stream.md
+    ├── index_set.md
+    └── ...
 ```
 
 ## 🚀 Quick Navigation
@@ -37,7 +34,7 @@ docs/
 **Getting Started:**
 - [Provider Overview](index.md) - Features, configuration, and quick start
 - [Local Testing Guide](guides/local_usage.md) - Test the provider locally
-- [Example Directory](../example-local-usage/) - Complete working examples
+- [Example Directory](../examples/graylog7-e2e/) - Complete working examples
 
 **Migration & Upgrades:**
 - [Graylog 7.0 Migration Guide](guides/migration_guide_v7.md) - Upgrade from earlier versions
@@ -53,12 +50,10 @@ docs/
 **Architecture & Design:**
 - [Architecture Overview](reference/architecture.md) - Component structure with diagrams
 - [API Mapping](reference/api_mapping.md) - Graylog API endpoints and changes
-- [Component Inventory](reference/inventory.md) - Complete file listing
 
 **Development:**
 - [Local Testing](guides/local_usage.md) - Development workflow
-- [Example Directory](../example-local-usage/README.md) - Comprehensive testing setup
-- [Project Summary](development/project_summary.md) - Implementation details
+- [Example Directory](../examples/graylog7-e2e/README.md) - Testing setup
 
 ## 📖 Documentation by Topic
 
@@ -104,15 +99,16 @@ provider "graylog" {
 
 **Quick Start:**
 ```bash
-# From example-local-usage directory
-make setup    # Build provider and configure
-make plan     # Test with terraform plan
-make apply    # Apply changes
+# Build provider locally
+make build
+
+# Install to local mirror (optional)
+make dev-install
 ```
 
 **Documentation:**
 - [Local Usage Guide](guides/local_usage.md) - Multiple testing methods
-- [Example Directory](../example-local-usage/README.md) - Complete setup guide
+- [Example Directory](../examples/graylog7-e2e/README.md) - Testing setup
 - [Architecture](reference/architecture.md) - Component structure
 
 ## 🎯 Common Tasks
@@ -145,22 +141,18 @@ terraform import graylog_stream.existing_stream <stream_id>
 terraform import graylog_stream_rule.existing_rule <stream_id>/<rule_id>
 ```
 
-**See:** [Import Examples](../example-local-usage/imports.tf)
+**See:** [Local Testing Guide](guides/local_usage.md)
 
 ### Testing Locally
 
-**Method 1: Example Directory (Recommended)**
+**Method 1: Build and Install**
 ```bash
-cd example-local-usage/
-make build && make plan
+make build
+make dev-install
 ```
 
 **Method 2: Developer Override**
-```bash
-go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
-./example-local-usage/use-dev-mode.sh
-./example-local-usage/dev-plan.sh
-```
+Configure `~/.terraformrc` with dev_overrides (see [Local Usage Guide](guides/local_usage.md))
 
 **See:** [Local Testing Guide](guides/local_usage.md)
 
@@ -228,7 +220,7 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 | Process messages | [Pipeline Resource](resources/pipeline.md) |
 | Configure alerts | [Event Definition](resources/event_definition.md) |
 | Manage users | [User Resource](resources/user.md) |
-| Import existing config | [Import Examples](../example-local-usage/imports.tf) |
+| Import existing config | [Local Testing Guide](guides/local_usage.md) |
 | Understand architecture | [Architecture Guide](reference/architecture.md) |
 | View API changes | [API Mapping](reference/api_mapping.md) |
 | See what's new | [Changelog](changelog.md) |
@@ -243,7 +235,7 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 **Developers:**
 - [Local Testing](guides/local_usage.md)
 - [Architecture](reference/architecture.md)
-- [Example Directory](../example-local-usage/)
+- [Example Directory](../examples/graylog7-e2e/)
 
 **DevOps/SRE:**
 - [Quick Start](index.md#quick-start)
@@ -267,10 +259,10 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 - [Terraform Provider Development](https://developer.hashicorp.com/terraform/plugin)
 
 ### Community
-- [GitHub Repository](https://github.com/terraform-provider-graylog/terraform-provider-graylog)
-- [Terraform Registry](https://registry.terraform.io/providers/terraform-provider-graylog/graylog)
+- [GitHub Repository](https://github.com/sven-borkert/terraform-provider-graylog)
+- [Terraform Registry](https://registry.terraform.io/providers/sven-borkert/graylog)
 - [Graylog Community](https://community.graylog.org/)
-- [Issue Tracker](https://github.com/terraform-provider-graylog/terraform-provider-graylog/issues)
+- [Issue Tracker](https://github.com/sven-borkert/terraform-provider-graylog/issues)
 
 ## 📝 Contributing to Documentation
 
@@ -291,7 +283,7 @@ Found an error or want to improve the documentation? Contributions are welcome!
 
 **Provider Issues:**
 - Check the [Troubleshooting Guide](guides/local_usage.md#debugging)
-- Search [GitHub Issues](https://github.com/terraform-provider-graylog/terraform-provider-graylog/issues)
+- Search [GitHub Issues](https://github.com/sven-borkert/terraform-provider-graylog/issues)
 - Create a new issue with details
 
 **Graylog Questions:**

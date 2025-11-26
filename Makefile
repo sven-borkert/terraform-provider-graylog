@@ -3,7 +3,7 @@ GOARCH ?= $(shell go env GOARCH)
 BINARY := terraform-provider-graylog
 BIN_DIR := bin
 PROVIDER_PATH := ./cmd/terraform-provider-graylog
-MIRROR_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/terraform-provider-graylog/graylog/0.0.0/$(GOOS)_$(GOARCH)
+MIRROR_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/sven-borkert/graylog/0.0.0/$(GOOS)_$(GOARCH)
 VENV := .venv
 
 .PHONY: build dev-install clean venv venv-install

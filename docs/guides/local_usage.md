@@ -43,8 +43,8 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 # Install to local plugin directory
 OS=$(go env GOOS)
 ARCH=$(go env GOARCH)
-mkdir -p ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}
-cp terraform-provider-graylog ~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/${OS}_${ARCH}/
+mkdir -p ~/.terraform.d/plugins/sven-borkert/graylog/3.0.0/${OS}_${ARCH}
+cp terraform-provider-graylog ~/.terraform.d/plugins/sven-borkert/graylog/3.0.0/${OS}_${ARCH}/
 
 # Use in your Terraform configuration
 terraform init
@@ -62,7 +62,7 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 cat > ~/.terraformrc <<EOF
 provider_installation {
   dev_overrides {
-    "terraform-provider-graylog/graylog" = "$(pwd)"
+    "sven-borkert/graylog" = "$(pwd)"
   }
   direct {}
 }
@@ -133,7 +133,7 @@ export TF_VAR_graylog_api_version="v1"
 terraform {
   required_providers {
     graylog = {
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       version = "3.0.0"
     }
   }

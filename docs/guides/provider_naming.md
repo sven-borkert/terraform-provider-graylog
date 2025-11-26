@@ -23,7 +23,7 @@ go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
 When installed locally, the provider name appears in the directory path:
 ```
 ~/.terraform.d/plugins/{NAMESPACE}/{NAME}/{VERSION}/{OS}_{ARCH}/
-~/.terraform.d/plugins/terraform-provider-graylog/graylog/3.0.0/linux_amd64/
+~/.terraform.d/plugins/sven-borkert/graylog/3.0.0/linux_amd64/
                         └── namespace ──┘  └─name─┘
 ```
 
@@ -38,7 +38,7 @@ In your Terraform configuration files:
 terraform {
   required_providers {
     graylog = {  # <-- Provider local name (can be aliased)
-      source  = "terraform-provider-graylog/graylog"
+      source  = "sven-borkert/graylog"
       #          └── namespace ──┘  └─name─┘
       version = "3.0.0"
     }
@@ -80,7 +80,7 @@ func Provider() *schema.Provider {
 If published to the Terraform Registry, the full address would be:
 ```
 registry.terraform.io/{NAMESPACE}/{NAME}
-registry.terraform.io/terraform-provider-graylog/graylog
+registry.terraform.io/sven-borkert/graylog
 ```
 
 ## How to Change the Provider Name
@@ -117,7 +117,7 @@ If you wanted to change the provider name from "graylog" to something else, you 
 
 - **Provider Name**: `graylog`
 - **Namespace**: `terraform-provider-graylog`
-- **Full Source**: `terraform-provider-graylog/graylog`
+- **Full Source**: `sven-borkert/graylog`
 - **Binary Name**: `terraform-provider-graylog`
 - **Go Module**: `github.com/sven-borkert/terraform-provider-graylog` (unrelated to provider name)
 
