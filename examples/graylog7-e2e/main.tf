@@ -312,3 +312,73 @@ output "data_user_by_username_email" {
 output "data_admin_user_roles" {
   value = data.graylog_user.admin.roles
 }
+
+# Role resource
+resource "graylog_role" "tf_e2e" {
+  name        = "tf-e2e-role"
+  description = "Terraform E2E test role"
+  permissions = ["streams:read"]
+}
+
+# Role data source - lookup by name
+data "graylog_role" "tf_e2e_by_name" {
+  name = graylog_role.tf_e2e.name
+}
+
+# Role data source - lookup existing Reader role
+data "graylog_role" "reader" {
+  name = "Reader"
+}
+
+output "role_name" {
+  value = graylog_role.tf_e2e.name
+}
+
+output "data_role_by_name_permissions" {
+  value = data.graylog_role.tf_e2e_by_name.permissions
+}
+
+output "data_reader_role_read_only" {
+  value = data.graylog_role.reader.read_only
+}
+
+# Grok pattern resource
+resource "graylog_grok_pattern" "tf_e2e" {
+  name    = "TF_E2E_TEST"
+  pattern = "\\d{4}-\\d{2}-\\d{2}"
+}
+
+# Grok pattern data source - lookup by name
+data "graylog_grok_pattern" "tf_e2e_by_name" {
+  name = graylog_grok_pattern.tf_e2e.name
+}
+
+# Grok pattern data source - lookup existing pattern
+data "graylog_grok_pattern" "year" {
+  name = "YEAR"
+}
+
+output "grok_pattern_name" {
+  value = graylog_grok_pattern.tf_e2e.name
+}
+
+output "data_grok_pattern_by_name" {
+  value = data.graylog_grok_pattern.tf_e2e_by_name.pattern
+}
+
+output "data_grok_year_pattern" {
+  value = data.graylog_grok_pattern.year.pattern
+}
+
+# Input static fields resource
+resource "graylog_input_static_fields" "tf_e2e" {
+  input_id = graylog_input.gelf_udp.id
+  fields = {
+    tf_e2e_env    = "test"
+    tf_e2e_source = "terraform"
+  }
+}
+
+output "input_static_fields_input_id" {
+  value = graylog_input_static_fields.tf_e2e.input_id
+}
