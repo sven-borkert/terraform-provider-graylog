@@ -2,7 +2,7 @@ terraform {
   required_providers {
     graylog = {
       source  = "sven-borkert/graylog"
-      version = "0.0.0"
+      version = "3.0.0-rc1"
     }
   }
 }

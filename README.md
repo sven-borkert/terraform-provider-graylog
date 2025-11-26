@@ -1,5 +1,7 @@
 # terraform-provider-graylog
 
+> **Note:** This project has been significantly refactored with AI assistance to add Graylog 7.0 support. While functional, not all features have been thoroughly tested. Use with caution in production environments and please report any issues you encounter.
+
 [![Build Status](https://github.com/sven-borkert/terraform-provider-graylog/workflows/CI/badge.svg)](https://github.com/sven-borkert/terraform-provider-graylog/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sven-borkert/terraform-provider-graylog)](https://goreportcard.com/report/github.com/sven-borkert/terraform-provider-graylog)
 [![GitHub last commit](https://img.shields.io/github/last-commit/sven-borkert/terraform-provider-graylog.svg)](https://github.com/sven-borkert/terraform-provider-graylog)

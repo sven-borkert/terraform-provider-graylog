@@ -4,71 +4,70 @@ This guide explains how to test and develop the Graylog Terraform provider local
 
 ## Quick Start
 
-For comprehensive examples and tools for local provider testing, see the **[example-local-usage](../../example-local-usage/)** directory in the repository root.
+```bash
+# Build the provider
+make build
 
-The example-local-usage directory provides:
-- Complete working examples
-- Multiple testing methods (standard, developer override, Makefile)
-- Build scripts and helper tools
-- Import examples and data source queries
-- Comprehensive documentation
+# Test with local provider (uses bin/terraform-dev wrapper)
+cd examples/graylog7-e2e
+../../bin/terraform-dev plan
+../../bin/terraform-dev apply
+```
 
 ## Testing Methods
 
-### Method 1: Using the Example Directory (Recommended)
+### Method 1: Using terraform-dev Wrapper (Recommended)
 
-The easiest way to test the provider locally is to use the example directory:
-
-```bash
-# Navigate to the example directory
-cd example-local-usage/
-
-# Build the provider and set up for testing
-make setup
-
-# Run terraform plan
-make plan
-```
-
-See the [example-local-usage README](../../example-local-usage/README.md) for detailed instructions.
-
-### Method 2: Manual Build and Install
-
-If you prefer to manually build and install:
+The `bin/terraform-dev` script automatically configures Terraform to use the locally built provider:
 
 ```bash
 # Build the provider
-go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
+make build
 
-# Install to local plugin directory
-OS=$(go env GOOS)
-ARCH=$(go env GOARCH)
-mkdir -p ~/.terraform.d/plugins/sven-borkert/graylog/3.0.0/${OS}_${ARCH}
-cp terraform-provider-graylog ~/.terraform.d/plugins/sven-borkert/graylog/3.0.0/${OS}_${ARCH}/
+# Use terraform-dev instead of terraform
+cd examples/graylog7-e2e
+../../bin/terraform-dev plan
+../../bin/terraform-dev apply
+../../bin/terraform-dev destroy
+```
 
-# Use in your Terraform configuration
+The wrapper:
+- Creates a `.terraformrc-dev` config file in the project root
+- Sets `TF_CLI_CONFIG_FILE` to use that config
+- Passes all arguments to terraform
+
+No `terraform init` is needed when using dev overrides.
+
+### Method 2: Using the Registry Version
+
+To test against the published registry version:
+
+```bash
+cd examples/graylog7-e2e
 terraform init
+terraform plan
+terraform apply
 ```
 
-### Method 3: Developer Override Mode
+### Method 3: Manual Dev Override
 
-For active development with fast iteration:
+If you prefer manual configuration:
 
 ```bash
 # Build the provider
-go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog
+make build
 
-# Create or edit ~/.terraformrc
+# Create ~/.terraformrc with dev override
 cat > ~/.terraformrc <<EOF
 provider_installation {
   dev_overrides {
-    "sven-borkert/graylog" = "$(pwd)"
+    "sven-borkert/graylog" = "/path/to/terraform-provider-graylog/bin"
   }
   direct {}
 }
 EOF
 
-# No terraform init needed - just run terraform plan
+# Run terraform (no init needed)
 terraform plan
 ```
 
@@ -77,27 +76,20 @@ terraform plan
 ### Standard Development Cycle
 
 1. Make changes to the provider code
-2. Build the provider: `go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog`
-3. Test your changes: `terraform plan` or `terraform apply`
+2. Build: `make build`
+3. Test: `bin/terraform-dev plan` (from examples directory)
 4. Iterate as needed
 
-### Using the Example Directory
+### Available Make Targets
 
-The example-local-usage directory provides the best development experience:
-
-```bash
-cd example-local-usage/
-
-# Rebuild provider after code changes
-make build
-
-# Test with developer overrides (no init needed)
-make plan
-make apply
-
-# Clean up when done
-make clean
-```
+| Target | Description |
+|--------|-------------|
+| `make build` | Build provider binary to `bin/` |
+| `make test` | Run unit tests with race detection |
+| `make acc-test` | Run acceptance tests (requires Graylog) |
+| `make lint` | Run golangci-lint |
+| `make fmt` | Format Go code |
+| `make clean` | Remove build artifacts |
 
 ## Testing Against Real Graylog
 
@@ -109,55 +101,15 @@ make clean
 
 ### Configuration
 
-Create a `terraform.tfvars` file:
+Create `examples/graylog7-e2e/graylog.auto.tfvars`:
 
 ```hcl
-graylog_endpoint    = "https://your-graylog-server.com/api"
-graylog_username    = "admin"
-graylog_password    = "your-password"
-graylog_api_version = "v1"
+graylog_web_endpoint_uri = "https://your-graylog-server.com/api"
+graylog_auth_name        = "admin"
+graylog_auth_password    = "your-password"
 ```
 
-Or use environment variables:
-
-```bash
-export TF_VAR_graylog_endpoint="https://your-graylog-server.com/api"
-export TF_VAR_graylog_username="admin"
-export TF_VAR_graylog_password="your-password"
-export TF_VAR_graylog_api_version="v1"
-```
-
-### Example Test Configuration
-
-```hcl
-terraform {
-  required_providers {
-    graylog = {
-      source  = "sven-borkert/graylog"
-      version = "3.0.0"
-    }
-  }
-}
-
-provider "graylog" {
-  web_endpoint_uri = var.graylog_endpoint
-  auth_name        = var.graylog_username
-  auth_password    = var.graylog_password
-  api_version      = var.graylog_api_version
-}
-
-# Test with a simple stream
-resource "graylog_stream" "test" {
-  title                              = "Test Stream"
-  description                        = "Created for provider testing"
-  index_set_id                       = data.graylog_index_set.default.id
-  remove_matches_from_default_stream = false
-}
-
-data "graylog_index_set" "default" {
-  index_set_id = "default"
-}
-```
+This file is gitignored and will not be committed.
 
 ## Debugging
 
@@ -165,23 +117,18 @@ data "graylog_index_set" "default" {
 
 ```bash
 export TF_LOG=DEBUG
-terraform plan
+../../bin/terraform-dev plan
 ```
-
-### Provider Logs
-
-The provider logs detailed information about API calls when debug logging is enabled.
 
 ### Common Issues
 
 **Provider not found:**
-- Ensure the binary is built and in the correct location
-- Check that the plugin directory structure is correct
-- Verify dev_overrides path is absolute (if using)
+- Ensure `make build` completed successfully
+- Check that `bin/terraform-provider-graylog` exists
 
 **Authentication failures:**
 - Verify the API endpoint includes `/api`
-- Check user has necessary permissions in Graylog 7.0+
+- Check user has necessary permissions
 - Test API access with curl:
   ```bash
   curl -u admin:password https://your-graylog.com/api/system
@@ -189,28 +136,20 @@ The provider logs detailed information about API calls when debug logging is ena
 
 **API errors:**
 - Check Graylog version compatibility (requires 7.0+)
-- Review Graylog logs for detailed error messages
-- Ensure resources exist before querying them
-
-## Additional Resources
-
-- **[Example Directory](../../example-local-usage/)** - Complete working examples
-- **[Migration Guide](migration_guide_v7.md)** - Upgrading to Graylog 7.0
-- **[API Mapping](../reference/api_mapping.md)** - API changes documentation
-- **[Provider Naming](provider_naming.md)** - Resource naming conventions
+- Review Graylog server logs for detailed error messages
 
 ## Quick Reference
 
 | Task | Command |
 |------|---------|
-| Build provider | `go build -o terraform-provider-graylog ./cmd/terraform-provider-graylog` |
-| Build from example dir | `cd example-local-usage && make build` |
-| Run quick test | `cd example-local-usage && make plan` |
-| Install locally | `./build-local.sh` (interactive) |
-| Setup example | `cd example-local-usage && make setup` |
-| Clean test environment | `cd example-local-usage && make clean` |
+| Build provider | `make build` |
+| Test with local provider | `cd examples/graylog7-e2e && ../../bin/terraform-dev plan` |
+| Test with registry provider | `cd examples/graylog7-e2e && terraform init && terraform plan` |
+| Run unit tests | `make test` |
+| Run linter | `make lint` |
+| Format code | `make fmt` |
 
-## See Also
+## Additional Resources
 
-For the most comprehensive and up-to-date testing documentation, always refer to:
-- **[example-local-usage/README.md](../../example-local-usage/README.md)**
+- **[API Mapping](../reference/api_mapping.md)** - API changes documentation
+- **[Provider Naming](provider_naming.md)** - Resource naming conventions

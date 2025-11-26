@@ -85,8 +85,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **No Terraform Configuration Changes Required:**
 Your existing `.tf` files work without modification. The provider handles all API format changes internally.
 
-See [docs/guides/migration_guide_v7.md](guides/migration_guide_v7.md) for detailed migration instructions.
-
 ## Previous Releases
 
 ### [1.x.x] - Historical Versions

@@ -10,7 +10,6 @@ docs/
 ├── changelog.md                      # Version history and changes
 ├── guides/                           # User guides
 │   ├── local_usage.md               # Local testing and development
-│   ├── migration_guide_v7.md        # Graylog 7.0 upgrade guide
 │   ├── provider_naming.md           # Naming conventions
 │   └── json-string-attribute.md     # Working with JSON attributes
 ├── reference/                        # Technical reference
@@ -37,8 +36,7 @@ docs/
 - [Example Directory](../examples/graylog7-e2e/) - Complete working examples
 
 **Migration & Upgrades:**
-- [Graylog 7.0 Migration Guide](guides/migration_guide_v7.md) - Upgrade from earlier versions
-- [Changelog](changelog.md) - What's changed in each version
+- [Changelog](changelog.md) - What's changed in each version (includes migration notes)
 
 **Reference:**
 - [All Resources](index.md#available-resources) - Complete resource list with links
@@ -91,7 +89,7 @@ provider "graylog" {
 - Zero configuration changes required
 
 **Documentation:**
-- [Migration Guide](guides/migration_guide_v7.md) - Step-by-step upgrade instructions
+- [Changelog](changelog.md) - Migration notes in version history
 - [Compatibility Matrix](index.md#compatibility) - Version requirements
 - [API Changes](reference/api_mapping.md) - Technical details
 
@@ -172,7 +170,7 @@ Configure `~/.terraformrc` with dev_overrides (see [Local Usage Guide](guides/lo
 3. Run `terraform init -upgrade`
 4. Verify with `terraform plan`
 
-**See:** [Migration Guide](guides/migration_guide_v7.md)
+**See:** [Changelog](changelog.md) for migration notes
 
 ## 📋 Resource Categories
 
@@ -214,7 +212,7 @@ Configure `~/.terraformrc` with dev_overrides (see [Local Usage Guide](guides/lo
 |-------------------------|---------------|
 | Get started quickly | [Provider Overview](index.md) |
 | Test locally | [Local Usage Guide](guides/local_usage.md) |
-| Upgrade to Graylog 7.0 | [Migration Guide](guides/migration_guide_v7.md) |
+| Upgrade to Graylog 7.0 | [Changelog](changelog.md) |
 | Create a stream | [Stream Resource](resources/stream.md) |
 | Set up log input | [Input Resource](resources/input.md) |
 | Process messages | [Pipeline Resource](resources/pipeline.md) |
@@ -230,7 +228,7 @@ Configure `~/.terraformrc` with dev_overrides (see [Local Usage Guide](guides/lo
 **Infrastructure Engineers:**
 - [Provider Overview](index.md)
 - [All Resources](index.md#available-resources)
-- [Migration Guide](guides/migration_guide_v7.md)
+- [Changelog](changelog.md)
 
 **Developers:**
 - [Local Testing](guides/local_usage.md)

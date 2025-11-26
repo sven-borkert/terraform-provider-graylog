@@ -91,7 +91,9 @@ terraform-provider-graylog/
 │   └── util/
 │       └── util.go                      # Shared utilities
 ├── docs/                                # Provider documentation
-└── example-local-usage/                 # Local testing examples
+└── examples/                            # Testing examples
+    ├── graylog7-e2e/                   # Current Graylog 7 testing
+    └── v0.12/                          # Legacy reference
 ```
 
 ### Component Responsibilities
@@ -582,5 +584,4 @@ The terraform-provider-graylog architecture is designed with:
 
 For more details on specific components, see:
 - [API Mapping](api_mapping.md) - API endpoint documentation
-- [Resource Inventory](inventory.md) - Complete component list
 - [Local Testing Guide](../guides/local_usage.md) - Development workflow
