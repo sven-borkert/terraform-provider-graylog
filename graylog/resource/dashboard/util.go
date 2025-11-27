@@ -59,10 +59,9 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 		return nil, errors.New("state.id or search_id must be set")
 	}
 	delete(state, keyID)
-	if err := convert.JSONToData(state, keyWidgetMapping, keyPositions); err != nil {
+	if err := convert.JSONToData(state, keyWidgetMapping, keyPositions, "titles"); err != nil {
 		return nil, err
 	}
-	delete(state, "titles")
 	widgets := state[keyWidgets].([]interface{})
 	for i, a := range widgets {
 		widget := a.(map[string]interface{})
@@ -147,7 +146,23 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 		keyWidgets: widgets,
 		keyID:      stateID,
 	}
-	cleanState["titles"] = "{}"
+	// Handle titles from API response
+	if v, ok := state["titles"]; ok {
+		switch mv := v.(type) {
+		case map[string]interface{}:
+			b, err := json.Marshal(mv)
+			if err != nil {
+				return fmt.Errorf("failed to marshal titles: %w", err)
+			}
+			cleanState["titles"] = string(b)
+		case string:
+			cleanState["titles"] = mv
+		default:
+			cleanState["titles"] = "{}"
+		}
+	} else {
+		cleanState["titles"] = "{}"
+	}
 	if v, ok := state[keyWidgetMapping]; ok {
 		switch mv := v.(type) {
 		case map[string]interface{}:

@@ -11,6 +11,7 @@ terraform-provider-graylog
 .venv/
 .mcp/
 examples/graylog7-e2e/graylog.auto.tfvars
+examples/graylog7-e2e/*.json
 example-local-usage
 .venv
 docs/api-docs
