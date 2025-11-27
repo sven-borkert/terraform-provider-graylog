@@ -117,3 +117,48 @@ func (cl Client) Delete(ctx context.Context, id string) (*http.Response, error) 
 	})
 	return resp, err
 }
+
+// DeflectorStatus represents the deflector status for an index set
+type DeflectorStatus struct {
+	IsUp          bool   `json:"is_up"`
+	CurrentTarget string `json:"current_target"`
+}
+
+// GetDeflectorStatus returns the deflector status for an index set
+func (cl Client) GetDeflectorStatus(ctx context.Context, id string) (*DeflectorStatus, *http.Response, error) {
+	if id == "" {
+		return nil, nil, errors.New("id is required")
+	}
+
+	body := &DeflectorStatus{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "GET",
+		Path:         "/system/deflector/" + id,
+		ResponseBody: body,
+	})
+	return body, resp, err
+}
+
+// WaitForDeflector polls the deflector status until it's up or timeout is reached
+func (cl Client) WaitForDeflector(ctx context.Context, id string, timeout time.Duration, interval time.Duration) error {
+	if id == "" {
+		return errors.New("id is required")
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		status, _, err := cl.GetDeflectorStatus(ctx, id)
+		if err == nil && status.IsUp && status.CurrentTarget != "" {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(interval):
+			// continue polling
+		}
+	}
+
+	return errors.New("timeout waiting for deflector to be ready")
+}

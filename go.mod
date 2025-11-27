@@ -3,6 +3,7 @@ module github.com/sven-borkert/terraform-provider-graylog
 go 1.24.0
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/stretchr/testify v1.10.0
 	github.com/suzuki-shunsuke/flute/v2 v2.0.0

@@ -32,6 +32,7 @@ import (
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/pipeline/rule"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/user"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/view"
+	viewsearch "github.com/sven-borkert/terraform-provider-graylog/graylog/client/view/search"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/config"
 )
 
@@ -64,6 +65,7 @@ type Client struct {
 	StreamRule              streamRule.Client
 	SavedSearch             saved.Client
 	View                    view.Client
+	ViewSearch              viewsearch.Client
 	User                    user.Client
 }
 
@@ -163,6 +165,9 @@ func New(m interface{}) (Client, error) {
 			Client: httpClient,
 		},
 		View: view.Client{
+			Client: httpClient,
+		},
+		ViewSearch: viewsearch.Client{
 			Client: httpClient,
 		},
 		User: user.Client{

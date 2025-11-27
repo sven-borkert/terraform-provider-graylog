@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-11-27
+
+### Added
+- **Dashboard search generation** - Dashboards now automatically create search objects with proper `search_types` (pivot queries) for each widget, ensuring widgets display data immediately without manual configuration
+- **View Search client** - New client for the `/views/search` API endpoint to create and manage dashboard search objects
+- **Widget titles support** - Dashboard widgets now properly support custom titles via the `titles` state attribute
+- **Deflector wait mechanism** - Index set creation now waits for the deflector alias to be ready, preventing race conditions when streams immediately route data to new index sets
+
+### Changed
+- Dashboard resource now generates `widget_mapping` automatically, linking widget IDs to their corresponding search type IDs
+- Dashboard `titles` attribute now properly passes through to the API instead of being reset to empty
+
+### Fixed
+- Fixed dashboard widgets not showing data after creation (missing search_types in search object)
+- Fixed widget titles not being applied (titles were being deleted before API call)
+- Fixed "Deflector exists as an index and is not an alias" error when creating index sets with streams that immediately receive data
+
 ## [3.0.0] - 2025-11-13
 
 ### Added
@@ -120,4 +137,4 @@ Previous versions supported Graylog 3.x through 6.x. See git history for detaile
 
 ---
 
-**Last Updated:** 2025-11-13
+**Last Updated:** 2025-11-27

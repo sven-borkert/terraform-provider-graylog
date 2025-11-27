@@ -82,6 +82,78 @@ resource "graylog_input" "gelf_udp" {
   attributes = jsonencode(local.gelf_udp_config)
 }
 
+resource "graylog_input" "beats" {
+  title  = "tf-e2e-beats"
+  type   = "org.graylog.plugins.beats.BeatsInput"
+  global = true
+  node   = ""
+
+  attributes = jsonencode({
+    bind_address     = "0.0.0.0"
+    port             = 5044
+    recv_buffer_size = 1048576
+    tls_enable       = false
+  })
+}
+
+# Get the 7 Days Hot template for PacketBeat
+data "graylog_index_set_template" "hot7" {
+  title = "7 Days Hot"
+}
+
+# PacketBeat index set with 7 days retention
+resource "graylog_index_set" "packetbeat" {
+  title                               = "PacketBeat"
+  description                         = "Index set for PacketBeat network telemetry data"
+  index_prefix                        = "packetbeat"
+  rotation_strategy_class             = "org.graylog2.indexer.rotation.strategies.TimeBasedSizeOptimizingStrategy"
+  rotation_strategy                   = jsonencode({
+    type               = "org.graylog2.indexer.rotation.strategies.TimeBasedSizeOptimizingStrategyConfig"
+    index_lifetime_min = "P7D"
+    index_lifetime_max = "P8D"
+  })
+  retention_strategy_class            = "org.graylog2.indexer.retention.strategies.DeletionRetentionStrategy"
+  retention_strategy                  = jsonencode({
+    type                  = "org.graylog2.indexer.retention.strategies.DeletionRetentionStrategyConfig"
+    max_number_of_indices = 5
+  })
+  data_tiering                        = jsonencode({
+    type               = "hot_only"
+    index_lifetime_min = "P7D"
+    index_lifetime_max = "P8D"
+  })
+  field_restrictions                  = jsonencode({})
+  index_analyzer                      = "standard"
+  index_set_template_id               = data.graylog_index_set_template.hot7.id
+  shards                              = 1
+  replicas                            = 0
+  index_optimization_max_num_segments = 1
+  field_type_refresh_interval         = 5000
+  index_optimization_disabled         = false
+  writable                            = true
+  use_legacy_rotation                 = false
+}
+
+# PacketBeat stream
+resource "graylog_stream" "packetbeat" {
+  title                              = "PacketBeat"
+  description                        = "Stream for PacketBeat network telemetry data"
+  index_set_id                       = graylog_index_set.packetbeat.id
+  matching_type                      = "AND"
+  disabled                           = false
+  remove_matches_from_default_stream = true
+}
+
+# Stream rule to match PacketBeat data by input
+resource "graylog_stream_rule" "packetbeat_input" {
+  stream_id   = graylog_stream.packetbeat.id
+  field       = "gl2_source_input"
+  type        = 1  # exact match
+  value       = graylog_input.beats.id
+  description = "Match messages from Beats input"
+  inverted    = false
+}
+
 resource "graylog_stream" "tf_e2e" {
   title                              = "tf-e2e-stream"
   description                        = "Terraform E2E test stream"
@@ -381,4 +453,113 @@ resource "graylog_input_static_fields" "tf_e2e" {
 
 output "input_static_fields_input_id" {
   value = graylog_input_static_fields.tf_e2e.input_id
+}
+
+# PacketBeat Dashboard
+resource "graylog_dashboard" "packetbeat" {
+  title       = "PacketBeat Network Overview"
+  description = "Network traffic analysis from PacketBeat"
+  summary     = "Simple dashboard showing network flows"
+  search_id   = data.graylog_saved_search.first.search_id
+
+  state {
+    id = data.graylog_saved_search.first.state_id
+
+    # Widget 1: Message count over time
+    widgets {
+      widget_id = "pb-traffic-over-time"
+      type      = "aggregation"
+      config = jsonencode({
+        row_pivots = [
+          {
+            type   = "time"
+            fields = ["timestamp"]
+            config = { interval = { type = "auto", scaling = 1.0 } }
+          }
+        ]
+        column_pivots = []
+        series        = [{ function = "count()", config = {} }]
+        sort          = []
+        rollup        = true
+        visualization = "area"
+        visualization_config = {
+          interpolation = "linear"
+          axis_type     = "linear"
+        }
+      })
+      timerange = jsonencode({ type = "relative", range = 900 })
+    }
+
+    # Widget 2: Traffic by transport protocol
+    widgets {
+      widget_id = "pb-by-transport"
+      type      = "aggregation"
+      config = jsonencode({
+        row_pivots    = [{ type = "values", fields = ["packetbeat_network_transport"], config = { limit = 10 } }]
+        column_pivots = []
+        series        = [{ function = "count()", config = {} }]
+        sort          = []
+        rollup        = true
+        visualization = "pie"
+      })
+      timerange = jsonencode({ type = "relative", range = 900 })
+    }
+
+    # Widget 3: Top destination ports
+    widgets {
+      widget_id = "pb-top-ports"
+      type      = "aggregation"
+      config = jsonencode({
+        row_pivots    = [{ type = "values", fields = ["packetbeat_destination_port"], config = { limit = 10 } }]
+        column_pivots = []
+        series = [
+          { function = "count()", config = {} },
+          { function = "sum(packetbeat_network_bytes)", config = {} }
+        ]
+        sort          = [{ type = "series", field = "count()", direction = "Descending" }]
+        rollup        = true
+        visualization = "table"
+      })
+      timerange = jsonencode({ type = "relative", range = 900 })
+    }
+
+    # Widget 4: Top source IPs
+    widgets {
+      widget_id = "pb-top-sources"
+      type      = "aggregation"
+      config = jsonencode({
+        row_pivots    = [{ type = "values", fields = ["packetbeat_source_ip"], config = { limit = 10 } }]
+        column_pivots = []
+        series        = [{ function = "count()", config = {} }]
+        sort          = [{ type = "series", field = "count()", direction = "Descending" }]
+        rollup        = true
+        visualization = "bar"
+        visualization_config = {
+          axis_type = "linear"
+          barmode   = "group"
+        }
+      })
+      timerange = jsonencode({ type = "relative", range = 900 })
+    }
+
+    widget_mapping = jsonencode({})
+    positions = jsonencode({
+      pb-traffic-over-time = { col = 1, row = 1, height = 3, width = "Infinity" }
+      pb-by-transport      = { col = 1, row = 4, height = 3, width = 3 }
+      pb-top-ports         = { col = 4, row = 4, height = 3, width = 3 }
+      pb-top-sources       = { col = 1, row = 7, height = 3, width = "Infinity" }
+    })
+    titles = jsonencode({
+      widget = {
+        pb-traffic-over-time = "Network Traffic Over Time"
+        pb-by-transport      = "Traffic by Protocol"
+        pb-top-ports         = "Top Destination Ports"
+        pb-top-sources       = "Top Source IPs"
+      }
+    })
+  }
+}
+
+output "packetbeat_dashboard_id" {
+  value = graylog_dashboard.packetbeat.id
 }
