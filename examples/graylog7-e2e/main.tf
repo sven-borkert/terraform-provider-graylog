@@ -243,10 +243,6 @@ output "data_output_type" {
   value = data.graylog_output.stdout.type
 }
 
-data "graylog_saved_search" "first" {
-  title = "My Saved Search"
-}
-
 data "graylog_grok_patterns" "all" {}
 
 resource "graylog_pipeline_rule" "tf_e2e" {
@@ -272,10 +268,6 @@ output "pipeline_rule_id" {
   value = graylog_pipeline_rule.tf_e2e.id
 }
 
-output "saved_search_id" {
-  value = data.graylog_saved_search.first.saved_search_id
-}
-
 output "grok_patterns_json" {
   value = data.graylog_grok_patterns.all.patterns_json
 }
@@ -284,10 +276,8 @@ resource "graylog_dashboard" "tf_e2e" {
   title       = "tf-e2e-dashboard"
   description = "Terraform E2E dashboard"
   summary     = "Dashboard via views API"
-  search_id   = data.graylog_saved_search.first.search_id
 
   state {
-    id = data.graylog_saved_search.first.state_id
     widgets {
       widget_id = "tf-e2e-agg"
       type      = "aggregation"
@@ -460,10 +450,8 @@ resource "graylog_dashboard" "packetbeat" {
   title       = "PacketBeat Network Overview"
   description = "Network traffic analysis from PacketBeat"
   summary     = "Simple dashboard showing network flows"
-  search_id   = data.graylog_saved_search.first.search_id
 
   state {
-    id = data.graylog_saved_search.first.state_id
 
     # Widget 1: Message count over time
     widgets {

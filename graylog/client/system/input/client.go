@@ -97,3 +97,31 @@ func (cl Client) Delete(ctx context.Context, id string) (*http.Response, error) 
 	})
 	return resp, err
 }
+
+// Stop stops the specified input
+func (cl Client) Stop(ctx context.Context, id string) (*http.Response, error) {
+	if id == "" {
+		return nil, errors.New("id is required")
+	}
+
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method: "DELETE",
+		Path:   "/system/inputstates/" + id,
+	})
+	return resp, err
+}
+
+// Start starts the specified input
+func (cl Client) Start(ctx context.Context, id string) (*http.Response, error) {
+	if id == "" {
+		return nil, errors.New("id is required")
+	}
+
+	body := map[string]interface{}{}
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:       "PUT",
+		Path:         "/system/inputstates/" + id,
+		ResponseBody: &body,
+	})
+	return resp, err
+}
