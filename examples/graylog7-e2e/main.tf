@@ -272,6 +272,34 @@ output "grok_patterns_json" {
   value = data.graylog_grok_patterns.all.patterns_json
 }
 
+# Saved search for DNS queries from PacketBeat
+resource "graylog_saved_search" "dns_queries" {
+  title       = "PacketBeat DNS Queries"
+  description = "DNS queries captured by PacketBeat"
+  summary     = "Shows all DNS queries with question name, response code, and type"
+
+  query           = "packetbeat_network_protocol:dns"
+  streams         = [graylog_stream.packetbeat.id]
+  timerange_type  = "relative"
+  timerange_range = 3600  # Last hour
+
+  selected_fields = [
+    "timestamp",
+    "packetbeat_source_ip",
+    "packetbeat_destination_ip",
+    "packetbeat_dns_question_name",
+    "packetbeat_dns_response_code",
+    "packetbeat_dns_type"
+  ]
+
+  sort_field = "timestamp"
+  sort_order = "Descending"
+}
+
+output "saved_search_dns_id" {
+  value = graylog_saved_search.dns_queries.id
+}
+
 resource "graylog_dashboard" "tf_e2e" {
   title       = "tf-e2e-dashboard"
   description = "Terraform E2E dashboard"
