@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/convert"
 )
@@ -56,11 +57,16 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 		}
 	}
 	if stateID == "" {
-		return nil, errors.New("state.id or search_id must be set")
+		// Generate a new state ID if not provided
+		stateID = uuid.New().String()
 	}
 	delete(state, keyID)
 	if err := convert.JSONToData(state, keyWidgetMapping, keyPositions, "titles"); err != nil {
 		return nil, err
+	}
+	// Ensure titles is always set to an empty map if not provided or empty (API requires it)
+	if v, ok := state["titles"]; !ok || v == nil || v == "" {
+		state["titles"] = map[string]interface{}{}
 	}
 	widgets := state[keyWidgets].([]interface{})
 	for i, a := range widgets {
@@ -156,7 +162,11 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 			}
 			cleanState["titles"] = string(b)
 		case string:
-			cleanState["titles"] = mv
+			if mv == "" {
+				cleanState["titles"] = "{}"
+			} else {
+				cleanState["titles"] = mv
+			}
 		default:
 			cleanState["titles"] = "{}"
 		}

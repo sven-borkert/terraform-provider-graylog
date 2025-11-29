@@ -58,7 +58,12 @@ func JSONToData(data map[string]interface{}, keys ...string) error {
 		if !ok {
 			continue
 		}
-		attr, err := dataeq.JSON.ConvertByte([]byte(v.(string)))
+		s, ok := v.(string)
+		if !ok || s == "" {
+			// Skip non-string or empty string values
+			continue
+		}
+		attr, err := dataeq.JSON.ConvertByte([]byte(s))
 		if err != nil {
 			return fmt.Errorf("failed to parse the '%s'. '%s' must be a JSON string: %w", key, key, err)
 		}

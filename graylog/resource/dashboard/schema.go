@@ -26,7 +26,8 @@ func schemaMap() map[string]*schema.Schema {
 		},
 		"search_id": {
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
+			Computed: true,
 		},
 		"state": schemaState,
 		"owner": {
