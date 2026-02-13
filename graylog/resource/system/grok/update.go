@@ -23,6 +23,9 @@ func update(d *schema.ResourceData, m interface{}) error {
 	// Remove computed fields for Graylog 7.0 compatibility
 	util.RemoveComputedFields(data)
 
+	// Graylog 7 Update requires id in body
+	data["id"] = d.Id()
+
 	if _, _, err := cl.Grok.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a grok %s: %w", d.Id(), err)
 	}

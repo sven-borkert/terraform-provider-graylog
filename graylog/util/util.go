@@ -165,8 +165,11 @@ func WrapEntityForCreation(entityData map[string]interface{}) map[string]interfa
 // RemoveComputedFields removes read-only/computed fields from data that should not
 // be sent in update requests. Graylog 7.0+ rejects unknown/read-only properties.
 //
-// Common computed fields removed:
-//   - id: Resource identifier (set in URL path, not body)
+// Note: Many Graylog 7 PUT endpoints require the id field in the request body.
+// Callers should set data["id"] = d.Id() AFTER calling this function.
+//
+// Computed fields removed:
+//   - id: Resource identifier (must be re-added after this call for most endpoints)
 //   - created_at: Creation timestamp (server-generated)
 //   - creator_user_id: Creator identifier (server-generated)
 //   - last_modified: Last modification timestamp (server-generated)
