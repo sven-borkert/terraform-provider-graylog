@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 const (
@@ -43,5 +44,5 @@ func create(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("index set created but deflector not ready: %w", err)
 	}
 
-	return nil
+	return util.ReadAfterCreate(d, m, id, read)
 }

@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+provider_dir="${1:-$HOME/.terraform-providers}"
+config_file="${2:-$HOME/.terraformrc}"
+
+mkdir -p "$provider_dir"
+config_dir="$(dirname "$config_file")"
+mkdir -p "$config_dir"
+
+start_marker="# BEGIN terraform-provider-graylog local override"
+end_marker="# END terraform-provider-graylog local override"
+
+read -r -d '' managed_block <<EOF || true
+$start_marker
+provider_installation {
+  dev_overrides {
+    "sven-borkert/graylog" = "$provider_dir"
+  }
+  direct {}
+}
+$end_marker
+EOF
+
+if [[ -f "$config_file" ]]; then
+  if grep -Fq "$start_marker" "$config_file"; then
+    awk \
+      -v start="$start_marker" \
+      -v end="$end_marker" \
+      -v block="$managed_block" \
+      '
+        BEGIN {inblock=0; replaced=0}
+        index($0, start) {if (!replaced) {print block; replaced=1}; inblock=1; next}
+        index($0, end) {inblock=0; next}
+        !inblock {print}
+        END {if (!replaced) print block}
+      ' "$config_file" > "$config_file.tmp"
+    mv "$config_file.tmp" "$config_file"
+    echo "Updated managed Graylog dev override block in $config_file"
+    exit 0
+  fi
+
+  if grep -Eq '^[[:space:]]*provider_installation[[:space:]]*\{' "$config_file"; then
+    cat <<EOF >&2
+Found an existing provider_installation block in $config_file.
+Refusing to auto-edit to avoid breaking your current Terraform configuration.
+
+Please merge this dev override manually into your existing provider_installation block:
+
+  dev_overrides {
+    "sven-borkert/graylog" = "$provider_dir"
+  }
+EOF
+    exit 1
+  fi
+fi
+
+{
+  if [[ -f "$config_file" ]]; then
+    cat "$config_file"
+    echo
+  fi
+  echo "$managed_block"
+} > "$config_file.tmp"
+mv "$config_file.tmp" "$config_file"
+
+echo "Configured Graylog dev override in $config_file"

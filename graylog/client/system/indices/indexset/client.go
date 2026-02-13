@@ -38,7 +38,7 @@ type GetAllParams struct {
 func (cl Client) Gets(
 	ctx context.Context, params *GetAllParams,
 ) (map[string]interface{}, *http.Response, error) {
-	var query url.Values
+	query := url.Values{}
 	if params != nil {
 		if params.Skip != 0 {
 			query.Add("skip", strconv.Itoa(params.Skip))

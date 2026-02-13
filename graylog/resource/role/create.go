@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 func create(d *schema.ResourceData, m interface{}) error {
@@ -22,6 +23,7 @@ func create(d *schema.ResourceData, m interface{}) error {
 	if _, _, err := cl.Role.Create(ctx, data); err != nil {
 		return fmt.Errorf("failed to create a role: %w", err)
 	}
-	d.SetId(data[keyName].(string))
-	return nil
+	id := data[keyName].(string)
+	d.SetId(id)
+	return util.ReadAfterCreate(d, m, id, read)
 }

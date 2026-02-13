@@ -10,16 +10,20 @@ func DataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"user_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the user. Either user_id or username must be set.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ExactlyOneOf:  []string{"user_id", "username"},
+				ConflictsWith: []string{"username"},
+				Description:   "The ID of the user. Either user_id or username must be set.",
 			},
 			"username": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The username. Either user_id or username must be set.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ExactlyOneOf:  []string{"user_id", "username"},
+				ConflictsWith: []string{"user_id"},
+				Description:   "The username. Either user_id or username must be set.",
 			},
 			"email": {
 				Type:        schema.TypeString,

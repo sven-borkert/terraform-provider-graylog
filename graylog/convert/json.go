@@ -9,7 +9,18 @@ import (
 
 func OneSizeListToJSON(data map[string]interface{}, keys ...string) error {
 	for _, key := range keys {
-		v := data[key].([]interface{})[0].(map[string]interface{})
+		raw, ok := data[key]
+		if !ok {
+			return fmt.Errorf("key '%s' not found in data", key)
+		}
+		list, ok := raw.([]interface{})
+		if !ok || len(list) == 0 {
+			return fmt.Errorf("field '%s' must be a non-empty list", key)
+		}
+		v, ok := list[0].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("first element of '%s' must be a map", key)
+		}
 		b, err := json.Marshal(v)
 		if err != nil {
 			return fmt.Errorf("failed to marshal attributes '%s' as JSON: %w", key, err)
@@ -78,5 +89,9 @@ func StringJSONToData(s string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
-	return attr.(map[string]interface{}), nil
+	m, ok := attr.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("parsed JSON is not a map object")
+	}
+	return m, nil
 }

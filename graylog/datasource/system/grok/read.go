@@ -28,10 +28,21 @@ func read(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
+		raw, ok := list["patterns"]
+		if !ok {
+			return errors.New("unexpected API response: 'patterns' field missing")
+		}
+		patterns, ok := raw.([]interface{})
+		if !ok {
+			return errors.New("unexpected API response: 'patterns' is not a list")
+		}
 		var match map[string]interface{}
 		cnt := 0
-		for _, p := range list["patterns"].([]interface{}) {
-			pm := p.(map[string]interface{})
+		for _, p := range patterns {
+			pm, ok := p.(map[string]interface{})
+			if !ok {
+				continue
+			}
 			if pm["name"] == name {
 				match = pm
 				cnt++

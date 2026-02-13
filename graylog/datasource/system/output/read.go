@@ -44,17 +44,31 @@ func readFromTitle(ctx context.Context, d *schema.ResourceData, cl client.Client
 		return err
 	}
 
+	raw, ok := outputs["outputs"]
+	if !ok {
+		return errors.New("unexpected API response: 'outputs' field missing")
+	}
+	list, ok := raw.([]interface{})
+	if !ok {
+		return errors.New("unexpected API response: 'outputs' is not a list")
+	}
+
 	filterType, hasType := d.GetOk("type")
 	var data map[string]interface{}
 	count := 0
 
-	for _, raw := range outputs["outputs"].([]interface{}) {
-		o := raw.(map[string]interface{})
-		if o["title"].(string) != title {
+	for _, item := range list {
+		o, ok := item.(map[string]interface{})
+		if !ok {
 			continue
 		}
-		if hasType && o["type"].(string) != filterType.(string) {
+		if name, _ := o["title"].(string); name != title {
 			continue
+		}
+		if hasType {
+			if t, _ := o["type"].(string); t != filterType.(string) {
+				continue
+			}
 		}
 		data = o
 		count++

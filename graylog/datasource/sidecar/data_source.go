@@ -10,12 +10,16 @@ func DataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"node_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"node_id", "node_name"},
+				ConflictsWith: []string{"node_name"},
 			},
 			"node_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"node_id", "node_name"},
+				ConflictsWith: []string{"node_id"},
 			},
 		},
 	}

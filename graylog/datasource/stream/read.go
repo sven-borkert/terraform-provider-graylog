@@ -32,11 +32,22 @@ func read(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
+		raw, ok := streams["streams"]
+		if !ok {
+			return errors.New("unexpected API response: 'streams' field missing")
+		}
+		list, ok := raw.([]interface{})
+		if !ok {
+			return errors.New("unexpected API response: 'streams' is not a list")
+		}
 		cnt := 0
 		var data map[string]interface{}
-		for _, a := range streams["streams"].([]interface{}) {
-			stream := a.(map[string]interface{})
-			if stream["title"].(string) == title {
+		for _, a := range list {
+			stream, ok := a.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if name, _ := stream["title"].(string); name == title {
 				data = stream
 				cnt++
 				if cnt > 1 {

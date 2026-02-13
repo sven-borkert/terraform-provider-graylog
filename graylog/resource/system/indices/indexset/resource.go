@@ -109,8 +109,6 @@ func Resource() *schema.Resource {
 			"index_set_template_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				// Built-in "30 Days Hot" template ID on this Graylog 7 instance
-				Default: "692067a9371785137c9b2b75",
 			},
 			"data_tiering": {
 				Type:             schema.TypeString,

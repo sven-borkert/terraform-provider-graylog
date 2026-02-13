@@ -54,7 +54,7 @@ func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Respon
 	return body, resp, err
 }
 
-func (cl Client) Create(ctx context.Context, user interface{}) (*http.Response, error) {
+func (cl Client) Create(ctx context.Context, user map[string]interface{}) (*http.Response, error) {
 	if user == nil {
 		return nil, errors.New("request body is nil")
 	}
@@ -68,7 +68,7 @@ func (cl Client) Create(ctx context.Context, user interface{}) (*http.Response, 
 	return resp, err
 }
 
-func (cl Client) Update(ctx context.Context, name string, user interface{}) (*http.Response, error) {
+func (cl Client) Update(ctx context.Context, name string, user map[string]interface{}) (*http.Response, error) {
 	if name == "" {
 		return nil, errors.New("username is required")
 	}

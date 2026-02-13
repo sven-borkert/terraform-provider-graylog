@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 func create(d *schema.ResourceData, m interface{}) error {
@@ -85,5 +86,5 @@ func create(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(dID)
 	log.Printf("[DEBUG] Created dashboard %s with search %s", dID, searchID)
-	return nil
+	return util.ReadAfterCreate(d, m, dID, read)
 }

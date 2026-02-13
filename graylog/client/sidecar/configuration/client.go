@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
+
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 type Client struct {
@@ -29,33 +31,24 @@ func (cl Client) Get(
 }
 
 func (cl Client) Create(
-	ctx context.Context, configuration interface{},
+	ctx context.Context, configuration map[string]interface{},
 ) (map[string]interface{}, *http.Response, error) {
 	if configuration == nil {
 		return nil, nil, errors.New("request body is nil")
-	}
-
-	// Wrap entity for Graylog 7.0 CreateEntityRequest structure
-	// See: https://go2docs.graylog.org/current/upgrading_graylog/upgrade_to_graylog_7.0.htm
-	requestData := map[string]interface{}{
-		"entity": configuration,
-		"share_request": map[string]interface{}{
-			"selected_grantee_capabilities": map[string]interface{}{},
-		},
 	}
 
 	body := map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/sidecar/configurations",
-		RequestBody:  requestData,
+		RequestBody:  util.WrapEntityForCreation(configuration),
 		ResponseBody: &body,
 	})
 	return body, resp, err
 }
 
 func (cl Client) Update(
-	ctx context.Context, id string, configuration interface{},
+	ctx context.Context, id string, configuration map[string]interface{},
 ) (map[string]interface{}, *http.Response, error) {
 	if id == "" {
 		return nil, nil, errors.New("id is required")
