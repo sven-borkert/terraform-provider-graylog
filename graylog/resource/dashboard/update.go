@@ -22,31 +22,36 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// Extract state and widgets to generate search_types
+	// Iterate all states (tabs) and generate search queries
 	stateMap := data[keyState].(map[string]interface{})
-	var stateID string
-	var state map[string]interface{}
-	for k, v := range stateMap {
-		stateID = k
-		state = v.(map[string]interface{})
-		break
-	}
-
-	if state == nil {
+	if len(stateMap) == 0 {
 		return errors.New("dashboard state is empty")
 	}
 
-	widgets, ok := state[keyWidgets].([]interface{})
-	if !ok {
-		widgets = []interface{}{}
+	defaultTimerange := getDefaultTimerange()
+	queries := make([]interface{}, 0, len(stateMap))
+
+	for stateID, sv := range stateMap {
+		state := sv.(map[string]interface{})
+
+		widgets, ok := state[keyWidgets].([]interface{})
+		if !ok {
+			widgets = []interface{}{}
+		}
+
+		// Extract per-tab query string
+		queryString, _ := state[keyQueryString].(string)
+		delete(state, keyQueryString)
+
+		query, widgetMapping, err := generateQueryFromWidgets(stateID, queryString, widgets, defaultTimerange)
+		if err != nil {
+			return fmt.Errorf("failed to generate search query for tab %s: %w", stateID, err)
+		}
+		queries = append(queries, query)
+		applyWidgetMappingToState(state, widgetMapping)
 	}
 
-	// Generate search with search_types for each widget
-	defaultTimerange := getDefaultTimerange()
-	searchData, widgetMapping, err := generateSearchFromWidgets(stateID, widgets, defaultTimerange)
-	if err != nil {
-		return fmt.Errorf("failed to generate search from widgets: %w", err)
-	}
+	searchData := buildSearchObject(queries)
 
 	// Create a new search (Graylog creates a new search on each dashboard update)
 	searchResp, _, err := cl.ViewSearch.Create(ctx, searchData)
@@ -58,11 +63,10 @@ func update(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("search creation failed: %w", err)
 	}
-	log.Printf("[DEBUG] Created search %s for dashboard update", searchID)
+	log.Printf("[DEBUG] Created search %s for dashboard update with %d queries", searchID, len(queries))
 
-	// Update the dashboard data with the new search_id and widget_mapping
+	// Update the dashboard data with the new search_id
 	data["search_id"] = searchID
-	applyWidgetMappingToState(state, widgetMapping)
 
 	// Remove computed fields for Graylog 7.0 compatibility
 	util.RemoveComputedFields(data)

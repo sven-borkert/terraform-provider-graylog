@@ -6,9 +6,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// generateSearchFromWidgets creates a search object with search_types derived from widget configs.
-// It returns the search object and a widget_mapping that links widget IDs to search_type IDs.
-func generateSearchFromWidgets(stateID string, widgets []interface{}, defaultTimerange map[string]interface{}) (map[string]interface{}, map[string][]string, error) {
+// generateQueryFromWidgets creates a single search query entry with search_types derived from widget configs.
+// It returns the query entry and a widget_mapping that links widget IDs to search_type IDs.
+func generateQueryFromWidgets(stateID string, queryString string, widgets []interface{}, defaultTimerange map[string]interface{}) (map[string]interface{}, map[string][]string, error) {
 	searchTypes := make([]interface{}, 0, len(widgets))
 	widgetMapping := make(map[string][]string)
 
@@ -52,26 +52,28 @@ func generateSearchFromWidgets(stateID string, widgets []interface{}, defaultTim
 		widgetMapping[widgetID] = []string{searchTypeID}
 	}
 
-	// Build the search object
-	search := map[string]interface{}{
-		"parameters":            []interface{}{},
-		"skip_no_streams_check": false,
-		"queries": []interface{}{
-			map[string]interface{}{
-				"id":      stateID,
-				"filters": []interface{}{},
-				"filter":  nil,
-				"query": map[string]interface{}{
-					"type":         "elasticsearch",
-					"query_string": "",
-				},
-				"timerange":    defaultTimerange,
-				"search_types": searchTypes,
-			},
+	query := map[string]interface{}{
+		"id":      stateID,
+		"filters": []interface{}{},
+		"filter":  nil,
+		"query": map[string]interface{}{
+			"type":         "elasticsearch",
+			"query_string": queryString,
 		},
+		"timerange":    defaultTimerange,
+		"search_types": searchTypes,
 	}
 
-	return search, widgetMapping, nil
+	return query, widgetMapping, nil
+}
+
+// buildSearchObject assembles multiple query entries into a complete search object.
+func buildSearchObject(queries []interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"parameters":            []interface{}{},
+		"skip_no_streams_check": false,
+		"queries":               queries,
+	}
 }
 
 // createSearchTypeFromWidgetConfig converts a widget config to a search_type (pivot query).

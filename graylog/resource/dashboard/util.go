@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,6 +34,8 @@ const (
 	keyConfig        = "config"
 	keyTimerange     = "timerange"
 	keyWidgetID      = "widget_id"
+	keyTabTitle      = "tab_title"
+	keyQueryString   = "query_string"
 )
 
 func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -42,98 +45,220 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	}
 	// force type = DASHBOARD
 	data["type"] = "DASHBOARD"
-	// Convert *schema.Set fields in widgets to []interface{} before deep copy
-	// (schema.Set contains SchemaSetFunc which cannot be JSON marshaled)
-	rawState := data[keyState].(map[string]interface{})
-	if rawWidgets, ok := rawState[keyWidgets].([]interface{}); ok {
-		for _, w := range rawWidgets {
-			if widget, ok := w.(map[string]interface{}); ok {
-				if s, ok := widget["streams"]; ok {
-					if set, ok := s.(*schema.Set); ok {
-						widget["streams"] = set.List()
+
+	// State is a list of state blocks (one per tab)
+	stateList := data[keyState].([]interface{})
+	stateMap := make(map[string]interface{}, len(stateList))
+
+	for _, rawStateItem := range stateList {
+		stateItem := rawStateItem.(map[string]interface{})
+
+		// Convert *schema.Set fields in widgets to []interface{} before deep copy
+		// (schema.Set contains SchemaSetFunc which cannot be JSON marshaled)
+		if rawWidgets, ok := stateItem[keyWidgets].([]interface{}); ok {
+			for _, w := range rawWidgets {
+				if widget, ok := w.(map[string]interface{}); ok {
+					if s, ok := widget["streams"]; ok {
+						if set, ok := s.(*schema.Set); ok {
+							widget["streams"] = set.List()
+						}
 					}
 				}
 			}
 		}
-	}
-	// deep copy state to avoid mutating ResourceData during API conversion
-	state, err := deepCopyMap(rawState)
-	if err != nil {
-		return nil, err
-	}
-	stateID := ""
-	if v, ok := state[keyID]; ok {
-		stateID, _ = v.(string)
-	}
-	if stateID == "" {
-		if v, ok := data["search_id"]; ok {
-			stateID, _ = v.(string)
-		}
-	}
-	if stateID == "" {
-		// Generate a new state ID if not provided
-		stateID = uuid.New().String()
-	}
-	delete(state, keyID)
-	if err := convert.JSONToData(state, keyWidgetMapping, keyPositions, "titles"); err != nil {
-		return nil, err
-	}
-	// Ensure titles is always set to an empty map if not provided or empty (API requires it)
-	if v, ok := state["titles"]; !ok || v == nil || v == "" {
-		state["titles"] = map[string]interface{}{}
-	}
-	widgets := state[keyWidgets].([]interface{})
-	for i, a := range widgets {
-		widget := a.(map[string]interface{})
-		if wID, ok := widget[keyWidgetID]; ok {
-			if s, ok := wID.(string); ok && s != "" {
-				widget["id"] = s
-			}
-			delete(widget, keyWidgetID)
-		}
-		if err := convert.JSONToData(widget, keyConfig, keyTimerange); err != nil {
+
+		// deep copy state to avoid mutating ResourceData during API conversion
+		state, err := deepCopyMap(stateItem)
+		if err != nil {
 			return nil, err
 		}
-		if q, ok := widget["query"]; ok {
-			switch v := q.(type) {
-			case []interface{}:
-				if len(v) == 0 {
-					delete(widget, "query")
-				} else {
-					// Unwrap single-element list to object for Graylog API
-					widget["query"] = v[0]
+
+		// Extract or generate state ID
+		stateID := ""
+		if v, ok := state[keyID]; ok {
+			stateID, _ = v.(string)
+		}
+		if stateID == "" {
+			stateID = uuid.New().String()
+		}
+		delete(state, keyID)
+
+		// Extract tab_title and merge into titles
+		tabTitle, _ := state[keyTabTitle].(string)
+		delete(state, keyTabTitle)
+
+		// Keep query_string on state for extraction in create/update
+		// (will be removed before sending to API)
+
+		if err := convert.JSONToData(state, keyWidgetMapping, keyPositions, "titles"); err != nil {
+			return nil, err
+		}
+
+		// Ensure titles is a map and merge tab_title
+		titles := ensureTitlesMap(state)
+		if tabTitle != "" {
+			titles["tab"] = map[string]interface{}{"title": tabTitle}
+		}
+		state["titles"] = titles
+
+		// Process widgets
+		widgets := state[keyWidgets].([]interface{})
+		for i, a := range widgets {
+			widget := a.(map[string]interface{})
+			if wID, ok := widget[keyWidgetID]; ok {
+				if s, ok := wID.(string); ok && s != "" {
+					widget["id"] = s
 				}
-			case map[string]interface{}:
-				if len(v) == 0 {
-					delete(widget, "query")
+				delete(widget, keyWidgetID)
+			}
+			if err := convert.JSONToData(widget, keyConfig, keyTimerange); err != nil {
+				return nil, err
+			}
+			if q, ok := widget["query"]; ok {
+				switch v := q.(type) {
+				case []interface{}:
+					if len(v) == 0 {
+						delete(widget, "query")
+					} else {
+						// Unwrap single-element list to object for Graylog API
+						widget["query"] = v[0]
+					}
+				case map[string]interface{}:
+					if len(v) == 0 {
+						delete(widget, "query")
+					}
 				}
 			}
+			widgets[i] = widget
 		}
-		widgets[i] = widget
+		state[keyWidgets] = widgets
+
+		stateMap[stateID] = state
 	}
-	state[keyWidgets] = widgets
-	data[keyState] = map[string]interface{}{
-		stateID: state,
-	}
+
+	data[keyState] = stateMap
 	delete(data, keyCreatedAt)
 	return data, nil
+}
+
+// ensureTitlesMap ensures state["titles"] is a map and returns it.
+func ensureTitlesMap(state map[string]interface{}) map[string]interface{} {
+	v, ok := state["titles"]
+	if !ok || v == nil {
+		return map[string]interface{}{}
+	}
+	switch mv := v.(type) {
+	case map[string]interface{}:
+		return mv
+	default:
+		return map[string]interface{}{}
+	}
 }
 
 func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) error {
 	log.Printf("dashboard flatten input state type %T", data[keyState])
 	stateMap := data[keyState].(map[string]interface{})
-	var stateID string
-	var state map[string]interface{}
-	for k, v := range stateMap {
-		stateID = k
-		state = v.(map[string]interface{})
-		break
-	}
-	if state == nil {
+
+	if len(stateMap) == 0 {
 		return errors.New("dashboard state is empty")
 	}
-	// log.Printf("dashboard flatten raw widget_mapping type %T value %v", state[keyWidgetMapping], state[keyWidgetMapping])
 
+	// Determine output order: match stored state IDs if available, else sort alphabetically
+	idOrder := getStateIDOrder(d, stateMap)
+
+	statesList := make([]interface{}, 0, len(stateMap))
+	for _, stateID := range idOrder {
+		sv, ok := stateMap[stateID]
+		if !ok {
+			continue
+		}
+		state := sv.(map[string]interface{})
+
+		cleanState, err := flattenState(stateID, state)
+		if err != nil {
+			return err
+		}
+		statesList = append(statesList, cleanState)
+	}
+
+	data[keyState] = statesList
+
+	for _, k := range []string{
+		"title", "description", "summary", "type", "search_id", "owner", "created_at",
+	} {
+		if v, ok := data[k]; ok {
+			if err := d.Set(k, v); err != nil {
+				return fmt.Errorf("failed to set %s: %w", k, err)
+			}
+		}
+	}
+	if err := d.Set(keyState, data[keyState]); err != nil {
+		return fmt.Errorf("failed to set state: %w", err)
+	}
+
+	a, ok := data[keyID]
+	if !ok {
+		return errors.New("failed to set id. 'id' isn't found")
+	}
+	dID, ok := a.(string)
+	if !ok {
+		return fmt.Errorf("'id' should be string: %v", a)
+	}
+
+	d.SetId(dID)
+	return nil
+}
+
+// getStateIDOrder returns state IDs in a stable order.
+// It first tries to match the order from the stored Terraform state, then appends any remaining IDs sorted.
+func getStateIDOrder(d *schema.ResourceData, stateMap map[string]interface{}) []string {
+	// Try to get existing state IDs from stored Terraform state
+	var storedIDs []string
+	if stored, ok := d.GetOk(keyState); ok {
+		if stateList, ok := stored.([]interface{}); ok {
+			for _, s := range stateList {
+				if sm, ok := s.(map[string]interface{}); ok {
+					if id, ok := sm[keyID].(string); ok && id != "" {
+						storedIDs = append(storedIDs, id)
+					}
+				}
+			}
+		}
+	}
+
+	if len(storedIDs) > 0 {
+		// Use stored order, append any new IDs sorted
+		used := make(map[string]bool, len(storedIDs))
+		order := make([]string, 0, len(stateMap))
+		for _, id := range storedIDs {
+			if _, ok := stateMap[id]; ok {
+				order = append(order, id)
+				used[id] = true
+			}
+		}
+		// Add any remaining IDs not in stored state
+		var remaining []string
+		for id := range stateMap {
+			if !used[id] {
+				remaining = append(remaining, id)
+			}
+		}
+		sort.Strings(remaining)
+		order = append(order, remaining...)
+		return order
+	}
+
+	// No stored state: sort alphabetically for deterministic output
+	ids := make([]string, 0, len(stateMap))
+	for id := range stateMap {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+// flattenState converts a single API state entry to Terraform-compatible format.
+func flattenState(stateID string, state map[string]interface{}) (map[string]interface{}, error) {
 	widgets := state[keyWidgets].([]interface{})
 	for i, a := range widgets {
 		widget := a.(map[string]interface{})
@@ -141,7 +266,7 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 			widget[keyWidgetID] = id
 		}
 		if err := convert.DataToJSON(widget, keyConfig, keyTimerange); err != nil {
-			return err
+			return nil, err
 		}
 		// ensure timerange/config are strings even if API shape changes
 		for _, k := range []string{keyConfig, keyTimerange} {
@@ -149,7 +274,7 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 				if _, ok := v.(string); !ok {
 					b, err := json.Marshal(v)
 					if err != nil {
-						return fmt.Errorf("failed to marshal widget %s: %w", k, err)
+						return nil, fmt.Errorf("failed to marshal widget %s: %w", k, err)
 					}
 					widget[k] = string(b)
 				}
@@ -176,13 +301,21 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 		keyWidgets: widgets,
 		keyID:      stateID,
 	}
-	// Handle titles from API response
+
+	// Handle titles from API response and extract tab_title
 	if v, ok := state["titles"]; ok {
 		switch mv := v.(type) {
 		case map[string]interface{}:
+			// Extract tab title if present
+			if tab, ok := mv["tab"].(map[string]interface{}); ok {
+				if title, ok := tab["title"].(string); ok {
+					cleanState[keyTabTitle] = title
+				}
+				delete(mv, "tab")
+			}
 			b, err := json.Marshal(mv)
 			if err != nil {
-				return fmt.Errorf("failed to marshal titles: %w", err)
+				return nil, fmt.Errorf("failed to marshal titles: %w", err)
 			}
 			cleanState["titles"] = string(b)
 		case string:
@@ -197,12 +330,20 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 	} else {
 		cleanState["titles"] = "{}"
 	}
+
+	// Handle query_string from search injection
+	if qs, ok := state[keyQueryString].(string); ok {
+		cleanState[keyQueryString] = qs
+	} else {
+		cleanState[keyQueryString] = ""
+	}
+
 	if v, ok := state[keyWidgetMapping]; ok {
 		switch mv := v.(type) {
 		case map[string]interface{}:
 			b, err := json.Marshal(mv)
 			if err != nil {
-				return fmt.Errorf("failed to marshal widget_mapping: %w", err)
+				return nil, fmt.Errorf("failed to marshal widget_mapping: %w", err)
 			}
 			cleanState[keyWidgetMapping] = string(b)
 		case string:
@@ -214,7 +355,7 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 		case map[string]interface{}:
 			b, err := json.Marshal(mv)
 			if err != nil {
-				return fmt.Errorf("failed to marshal positions: %w", err)
+				return nil, fmt.Errorf("failed to marshal positions: %w", err)
 			}
 			cleanState[keyPositions] = string(b)
 		case string:
@@ -223,38 +364,8 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 	} else {
 		cleanState[keyPositions] = "{}"
 	}
-	// log.Printf("dashboard flatten state: widget_mapping type %T value %v positions type %T value %v", cleanState[keyWidgetMapping], cleanState[keyWidgetMapping], cleanState[keyPositions], cleanState[keyPositions])
-	// if len(widgets) > 0 {
-	// 	if w, ok := widgets[0].(map[string]interface{}); ok {
-	// 		log.Printf("dashboard flatten first widget timerange type %T value %v", w[keyTimerange], w[keyTimerange])
-	// 	}
-	// }
-	data[keyState] = []interface{}{cleanState}
 
-	for _, k := range []string{
-		"title", "description", "summary", "type", "search_id", "owner", "created_at",
-	} {
-		if v, ok := data[k]; ok {
-			if err := d.Set(k, v); err != nil {
-				return fmt.Errorf("failed to set %s: %w", k, err)
-			}
-		}
-	}
-	if err := d.Set(keyState, data[keyState]); err != nil {
-		return fmt.Errorf("failed to set state: %w", err)
-	}
-
-	a, ok := data[keyID]
-	if !ok {
-		return errors.New("failed to set id. 'id' isn't found")
-	}
-	dID, ok := a.(string)
-	if !ok {
-		return fmt.Errorf("'id' should be string: %v", a)
-	}
-
-	d.SetId(dID)
-	return nil
+	return cleanState, nil
 }
 
 // injectStreamsFromSearch maps streams from search_types back to widgets via widget_mapping.
@@ -328,6 +439,42 @@ func injectStreamsFromSearch(viewData, searchData map[string]interface{}) {
 					}
 				}
 			}
+		}
+	}
+}
+
+// injectQueryFromSearch maps per-tab query strings from search queries back to view state entries.
+func injectQueryFromSearch(viewData, searchData map[string]interface{}) {
+	queryStrings := map[string]string{}
+	if queries, ok := searchData["queries"].([]interface{}); ok {
+		for _, q := range queries {
+			query, ok := q.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			qID, ok := query["id"].(string)
+			if !ok || qID == "" {
+				continue
+			}
+			if qObj, ok := query["query"].(map[string]interface{}); ok {
+				if qs, ok := qObj["query_string"].(string); ok {
+					queryStrings[qID] = qs
+				}
+			}
+		}
+	}
+
+	stateMap, ok := viewData[keyState].(map[string]interface{})
+	if !ok {
+		return
+	}
+	for stateID, sv := range stateMap {
+		state, ok := sv.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if qs, ok := queryStrings[stateID]; ok {
+			state[keyQueryString] = qs
 		}
 	}
 }

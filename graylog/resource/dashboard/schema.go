@@ -46,11 +46,12 @@ var schemaState = &schema.Schema{
 	Type:     schema.TypeList,
 	Required: true,
 	MinItems: 1,
-	MaxItems: 1,
 	Elem: &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"id":      {Type: schema.TypeString, Optional: true},
-			"widgets": schemaWidgets,
+			"id":           {Type: schema.TypeString, Optional: true, Computed: true},
+			"tab_title":    {Type: schema.TypeString, Optional: true},
+			"query_string": {Type: schema.TypeString, Optional: true, Default: ""},
+			"widgets":      schemaWidgets,
 			"widget_mapping": {
 				Type:             schema.TypeString,
 				Optional:         true,
