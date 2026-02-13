@@ -21,5 +21,13 @@ func read(d *schema.ResourceData, m interface{}) error {
 		return util.HandleGetResourceError(
 			d, resp, fmt.Errorf("failed to get a dashboard %s: %w", d.Id(), err))
 	}
+
+	// Fetch the search to extract per-widget streams from search_types
+	if searchID, ok := data["search_id"].(string); ok && searchID != "" {
+		if searchData, _, err := cl.ViewSearch.Get(ctx, searchID); err == nil {
+			injectStreamsFromSearch(data, searchData)
+		}
+	}
+
 	return setDataToResourceData(d, data)
 }
