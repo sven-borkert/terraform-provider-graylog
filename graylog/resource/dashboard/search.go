@@ -39,8 +39,14 @@ func generateSearchFromWidgets(stateID string, widgets []interface{}, defaultTim
 		// Generate a unique ID for this search_type
 		searchTypeID := uuid.New().String()
 
+		// Extract streams from widget
+		var widgetStreams []interface{}
+		if s, ok := widget["streams"].([]interface{}); ok {
+			widgetStreams = s
+		}
+
 		// Create the search_type from widget config
-		searchType := createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange)
+		searchType := createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams)
 
 		searchTypes = append(searchTypes, searchType)
 		widgetMapping[widgetID] = []string{searchTypeID}
@@ -69,7 +75,10 @@ func generateSearchFromWidgets(stateID string, widgets []interface{}, defaultTim
 }
 
 // createSearchTypeFromWidgetConfig converts a widget config to a search_type (pivot query).
-func createSearchTypeFromWidgetConfig(id string, config map[string]interface{}, widgetTimerange interface{}, defaultTimerange map[string]interface{}) map[string]interface{} {
+func createSearchTypeFromWidgetConfig(id string, config map[string]interface{}, widgetTimerange interface{}, defaultTimerange map[string]interface{}, streams []interface{}) map[string]interface{} {
+	if streams == nil {
+		streams = []interface{}{}
+	}
 	searchType := map[string]interface{}{
 		"id":                id,
 		"type":              "pivot",
@@ -77,7 +86,7 @@ func createSearchTypeFromWidgetConfig(id string, config map[string]interface{}, 
 		"filter":            nil,
 		"filters":           []interface{}{},
 		"query":             nil,
-		"streams":           []interface{}{},
+		"streams":           streams,
 		"stream_categories": []interface{}{},
 		"rollup":            true,
 		"column_groups":     []interface{}{},

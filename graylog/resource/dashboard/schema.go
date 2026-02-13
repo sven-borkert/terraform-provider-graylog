@@ -108,6 +108,11 @@ var schemaWidgets = &schema.Schema{
 				ValidateFunc:     util.ValidateIsJSON,
 			},
 			"query": schemaQuery,
+			"streams": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 		},
 	},
 }

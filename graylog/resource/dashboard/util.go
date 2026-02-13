@@ -85,6 +85,9 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 			case []interface{}:
 				if len(v) == 0 {
 					delete(widget, "query")
+				} else {
+					// Unwrap single-element list to object for Graylog API
+					widget["query"] = v[0]
 				}
 			case map[string]interface{}:
 				if len(v) == 0 {
@@ -138,9 +141,16 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 				}
 			}
 		}
+		// Wrap query object from API into a list for Terraform schema
+		if q, ok := widget["query"]; ok {
+			switch v := q.(type) {
+			case map[string]interface{}:
+				widget["query"] = []interface{}{v}
+			}
+		}
 		for k := range widget {
 			switch k {
-			case keyWidgetID, "type", keyConfig, keyTimerange, "query":
+			case keyWidgetID, "type", keyConfig, keyTimerange, "query", "streams":
 			default:
 				delete(widget, k)
 			}
@@ -231,4 +241,79 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 
 	d.SetId(dID)
 	return nil
+}
+
+// injectStreamsFromSearch maps streams from search_types back to widgets via widget_mapping.
+func injectStreamsFromSearch(viewData, searchData map[string]interface{}) {
+	// Build search_type_id → streams mapping from search queries
+	searchTypeStreams := map[string][]interface{}{}
+	if queries, ok := searchData["queries"].([]interface{}); ok {
+		for _, q := range queries {
+			query, ok := q.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			searchTypes, ok := query["search_types"].([]interface{})
+			if !ok {
+				continue
+			}
+			for _, st := range searchTypes {
+				stMap, ok := st.(map[string]interface{})
+				if !ok {
+					continue
+				}
+				stID, ok := stMap["id"].(string)
+				if !ok || stID == "" {
+					continue
+				}
+				if streams, ok := stMap["streams"].([]interface{}); ok && len(streams) > 0 {
+					searchTypeStreams[stID] = streams
+				}
+			}
+		}
+	}
+
+	if len(searchTypeStreams) == 0 {
+		return
+	}
+
+	// Walk through the view state and inject streams into widgets
+	stateMap, ok := viewData[keyState].(map[string]interface{})
+	if !ok {
+		return
+	}
+	for _, sv := range stateMap {
+		state, ok := sv.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		widgetMapping, _ := state[keyWidgetMapping].(map[string]interface{})
+		widgets, ok := state[keyWidgets].([]interface{})
+		if !ok {
+			continue
+		}
+		for _, w := range widgets {
+			widget, ok := w.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			widgetID, _ := widget["id"].(string)
+			if widgetID == "" {
+				continue
+			}
+			// Look up search_type IDs for this widget via widget_mapping
+			if stIDs, ok := widgetMapping[widgetID]; ok {
+				if idList, ok := stIDs.([]interface{}); ok {
+					for _, stID := range idList {
+						if id, ok := stID.(string); ok {
+							if streams, ok := searchTypeStreams[id]; ok {
+								widget["streams"] = streams
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
