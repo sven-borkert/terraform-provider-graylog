@@ -55,7 +55,8 @@ var schemaState = &schema.Schema{
 			"widget_mapping": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
+				Computed:         true,
+				DiffSuppressFunc: util.SchemaDiffSuppressJSONSubset,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
 			"positions": {
@@ -99,7 +100,7 @@ var schemaWidgets = &schema.Schema{
 			"config": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
+				DiffSuppressFunc: util.SchemaDiffSuppressJSONSubset,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
 			"timerange": {

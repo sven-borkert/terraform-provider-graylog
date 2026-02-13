@@ -297,6 +297,13 @@ func flattenState(stateID string, state map[string]interface{}) (map[string]inte
 		widgets[i] = widget
 	}
 
+	// Sort widgets by widget_id for deterministic ordering (Graylog stores them as a HashSet)
+	sort.Slice(widgets, func(i, j int) bool {
+		a, _ := widgets[i].(map[string]interface{})[keyWidgetID].(string)
+		b, _ := widgets[j].(map[string]interface{})[keyWidgetID].(string)
+		return a < b
+	})
+
 	cleanState := map[string]interface{}{
 		keyWidgets: widgets,
 		keyID:      stateID,
