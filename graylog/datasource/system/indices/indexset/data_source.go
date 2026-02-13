@@ -10,16 +10,22 @@ func DataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"index_set_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"index_set_id", "title", "index_prefix"},
+				ConflictsWith: []string{"title", "index_prefix"},
 			},
 			"title": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"index_set_id", "title", "index_prefix"},
+				ConflictsWith: []string{"index_set_id", "index_prefix"},
 			},
 			"index_prefix": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ExactlyOneOf:  []string{"index_set_id", "title", "index_prefix"},
+				ConflictsWith: []string{"index_set_id", "title"},
 			},
 
 			// computed

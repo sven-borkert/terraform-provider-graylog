@@ -51,14 +51,10 @@ func (cl Client) Gets(ctx context.Context, params *GetAllParams) (map[string]int
 		}
 	}
 
-	path := "/system/outputs"
-	if q := query.Encode(); q != "" {
-		path += "?" + q
-	}
-
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "GET",
-		Path:         path,
+		Path:         "/system/outputs",
+		Query:        query,
 		ResponseBody: &body,
 	})
 	return body, resp, err

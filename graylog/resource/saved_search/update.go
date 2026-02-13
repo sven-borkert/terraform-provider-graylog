@@ -54,11 +54,11 @@ func update(d *schema.ResourceData, m interface{}) error {
 	// Widget sort needs "type" field for SortConfigDTO
 	widgetSortOrder := d.Get("sort_order").(string)
 	widgetConfig := map[string]interface{}{
-		"decorators":         []interface{}{},
-		"fields":             selectedFields,
-		"show_message_row":   true,
-		"show_summary":       false,
-		"sort":               []interface{}{map[string]interface{}{"type": "pivot", "field": d.Get("sort_field").(string), "direction": widgetSortOrder}},
+		"decorators":       []interface{}{},
+		"fields":           selectedFields,
+		"show_message_row": true,
+		"show_summary":     false,
+		"sort":             []interface{}{map[string]interface{}{"type": "pivot", "field": d.Get("sort_field").(string), "direction": widgetSortOrder}},
 	}
 
 	// Build the widget
@@ -84,21 +84,21 @@ func update(d *schema.ResourceData, m interface{}) error {
 
 	// Build the search type for the messages widget
 	searchType := map[string]interface{}{
-		"id":   searchTypeID,
-		"name": "messages",
-		"type": "messages",
+		"id":        searchTypeID,
+		"name":      "messages",
+		"type":      "messages",
 		"timerange": timerange,
 		"streams":   streams,
 		"query": map[string]interface{}{
 			"type":         "elasticsearch",
 			"query_string": query,
 		},
-		"filter":  nil,
-		"filters": []interface{}{},
+		"filter":     nil,
+		"filters":    []interface{}{},
 		"decorators": []interface{}{},
-		"limit":   150,
-		"offset":  0,
-		"sort":    []interface{}{map[string]interface{}{"field": d.Get("sort_field").(string), "order": sortOrder}},
+		"limit":      150,
+		"offset":     0,
+		"sort":       []interface{}{map[string]interface{}{"field": d.Get("sort_field").(string), "order": sortOrder}},
 	}
 
 	// Build the search object
@@ -179,8 +179,12 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to update saved search view: %w", err)
 	}
 
-	d.Set("search_id", searchID)
-	d.Set("state_id", stateID)
+	if err := d.Set("search_id", searchID); err != nil {
+		return err
+	}
+	if err := d.Set("state_id", stateID); err != nil {
+		return err
+	}
 
 	log.Printf("[DEBUG] Updated saved search %s with search %s", d.Id(), searchID)
 	return nil

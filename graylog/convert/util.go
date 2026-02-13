@@ -3,8 +3,14 @@ package convert
 func ListToMap(data []interface{}, key string) map[string]interface{} {
 	m := make(map[string]interface{}, len(data))
 	for _, d := range data {
-		elem := d.(map[string]interface{})
-		a := elem[key].(string)
+		elem, ok := d.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		a, ok := elem[key].(string)
+		if !ok {
+			continue
+		}
 		delete(elem, key)
 		m[a] = elem
 	}
@@ -12,21 +18,26 @@ func ListToMap(data []interface{}, key string) map[string]interface{} {
 }
 
 func MapToList(data map[string]interface{}, key string) []interface{} {
-	list := make([]interface{}, len(data))
-	i := 0
+	list := make([]interface{}, 0, len(data))
 	for k, d := range data {
-		elem := d.(map[string]interface{})
+		elem, ok := d.(map[string]interface{})
+		if !ok {
+			continue
+		}
 		elem[key] = k
-		list[i] = elem
-		i++
+		list = append(list, elem)
 	}
 	return list
 }
 
 func InterfaceListToStringList(data []interface{}) []string {
-	list := make([]string, len(data))
-	for i, a := range data {
-		list[i] = a.(string)
+	list := make([]string, 0, len(data))
+	for _, a := range data {
+		s, ok := a.(string)
+		if !ok {
+			continue
+		}
+		list = append(list, s)
 	}
 	return list
 }

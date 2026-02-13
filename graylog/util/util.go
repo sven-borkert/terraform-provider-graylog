@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/suzuki-shunsuke/go-dataeq/dataeq"
@@ -29,6 +30,43 @@ func HandleGetResourceError(
 		}
 	}
 	return err
+}
+
+var (
+	readAfterCreateAttempts = 10
+	readAfterCreateDelay    = 500 * time.Millisecond
+)
+
+// ReadAfterCreate retries a read call to absorb eventual consistency immediately
+// after resource creation. readFunc is expected to clear ID when the resource is
+// not found.
+func ReadAfterCreate(
+	d *schema.ResourceData,
+	m interface{},
+	id string,
+	readFunc func(*schema.ResourceData, interface{}) error,
+) error {
+	if readFunc == nil {
+		return errors.New("read function is required")
+	}
+	if id == "" {
+		return errors.New("id is required")
+	}
+
+	for i := 0; i < readAfterCreateAttempts; i++ {
+		d.SetId(id)
+		if err := readFunc(d, m); err != nil {
+			return err
+		}
+		if d.Id() != "" {
+			return nil
+		}
+		if i < readAfterCreateAttempts-1 {
+			time.Sleep(readAfterCreateDelay)
+		}
+	}
+
+	return fmt.Errorf("resource %s not found after create", id)
 }
 
 func SchemaDiffSuppressJSONString(k, oldV, newV string, d *schema.ResourceData) bool {

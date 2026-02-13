@@ -116,7 +116,16 @@ The provider has been fully updated to support Graylog 7.0's breaking API change
   ```bash
   make dev-install
   ```
-- When using `~/.terraformrc` dev_overrides (recommended for development), Terraform uses whatever binary is in `bin/` at plan/apply time. Re-run `make build` to pick up changes; no re-init needed. If you do run `terraform init`, clear `.terraform/` and `.terraform.lock.hcl` to avoid stale binaries.
+- Preferred local workflow (plain `terraform` commands, no wrapper):
+  ```bash
+  make local-provider-setup
+  ```
+  This builds the provider to `~/.terraform-providers/terraform-provider-graylog` and configures `~/.terraformrc` with a `dev_overrides` entry for `sven-borkert/graylog`.
+- After code changes, rebuild local provider:
+  ```bash
+  make local-provider-build
+  ```
+  Because `dev_overrides` points to a stable path, each rebuild is picked up automatically by subsequent Terraform runs.
 
 ## License
 

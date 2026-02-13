@@ -57,10 +57,18 @@ func readByTitle(ctx context.Context, d *schema.ResourceData, cl client.Client, 
 		}
 	}
 
+	list, ok := elements.([]interface{})
+	if !ok {
+		return errors.New("unexpected API response: dashboard list is not an array")
+	}
+
 	var data map[string]interface{}
-	for _, a := range elements.([]interface{}) {
-		dashboard := a.(map[string]interface{})
-		if dashboard[keyTitle].(string) == title {
+	for _, a := range list {
+		dashboard, ok := a.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if name, _ := dashboard[keyTitle].(string); name == title {
 			if data != nil {
 				return fmt.Errorf("title %q is not unique, multiple dashboards found", title)
 			}

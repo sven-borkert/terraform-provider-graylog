@@ -7,14 +7,18 @@ func DataSource() *schema.Resource {
 		Read: read,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ExactlyOneOf:  []string{"name", "pattern_id"},
+				ConflictsWith: []string{"pattern_id"},
 			},
 			"pattern_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ExactlyOneOf:  []string{"name", "pattern_id"},
+				ConflictsWith: []string{"name"},
 			},
 			"pattern": {
 				Type:     schema.TypeString,

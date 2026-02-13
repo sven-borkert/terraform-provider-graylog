@@ -51,11 +51,22 @@ func readFromTitle(ctx context.Context, d *schema.ResourceData, cl client.Client
 	if err != nil {
 		return err
 	}
+	raw, ok := indexSets["index_sets"]
+	if !ok {
+		return errors.New("unexpected API response: 'index_sets' field missing")
+	}
+	list, ok := raw.([]interface{})
+	if !ok {
+		return errors.New("unexpected API response: 'index_sets' is not a list")
+	}
 	cnt := 0
 	var data map[string]interface{}
-	for _, is := range indexSets["index_sets"].([]interface{}) {
-		a := is.(map[string]interface{})
-		if a["title"].(string) == title {
+	for _, is := range list {
+		a, ok := is.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if name, _ := a["title"].(string); name == title {
 			data = a
 			cnt++
 			if cnt > 1 {
@@ -74,9 +85,20 @@ func readFromPrefix(ctx context.Context, d *schema.ResourceData, cl client.Clien
 	if err != nil {
 		return err
 	}
-	for _, is := range indexSets["index_sets"].([]interface{}) {
-		data := is.(map[string]interface{})
-		if data["index_prefix"].(string) == prefix {
+	raw, ok := indexSets["index_sets"]
+	if !ok {
+		return errors.New("unexpected API response: 'index_sets' field missing")
+	}
+	list, ok := raw.([]interface{})
+	if !ok {
+		return errors.New("unexpected API response: 'index_sets' is not a list")
+	}
+	for _, is := range list {
+		data, ok := is.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if p, _ := data["index_prefix"].(string); p == prefix {
 			return setDataToResourceData(d, data)
 		}
 	}

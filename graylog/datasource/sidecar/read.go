@@ -32,9 +32,20 @@ func read(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		for _, a := range sidecars[keySidecars].([]interface{}) {
-			sidecar := a.(map[string]interface{})
-			if sidecar[keyNodeName].(string) == nodeName {
+		raw, ok := sidecars[keySidecars]
+		if !ok {
+			return errors.New("unexpected API response: 'sidecars' field missing")
+		}
+		list, ok := raw.([]interface{})
+		if !ok {
+			return errors.New("unexpected API response: 'sidecars' is not a list")
+		}
+		for _, a := range list {
+			sidecar, ok := a.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if name, _ := sidecar[keyNodeName].(string); name == nodeName {
 				return setDataToResourceData(d, sidecar)
 			}
 		}

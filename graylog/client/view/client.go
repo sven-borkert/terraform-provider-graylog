@@ -6,18 +6,12 @@ import (
 	"net/http"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
+
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 type Client struct {
 	Client httpclient.Client
-}
-
-func wrapCreateEntityRequest(data map[string]interface{}) map[string]interface{} {
-	// Graylog Views API expects a CreateEntityRequest payload: { "entity": <ViewDTO>, "share_request": {} }
-	return map[string]interface{}{
-		"entity":        data,
-		"share_request": map[string]interface{}{},
-	}
 }
 
 func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *http.Response, error) {
@@ -45,7 +39,7 @@ func (cl Client) Create(
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "POST",
 		Path:         "/views",
-		RequestBody:  wrapCreateEntityRequest(data),
+		RequestBody:  util.WrapEntityForCreation(data),
 		ResponseBody: &body,
 	})
 	return body, resp, err
@@ -65,7 +59,7 @@ func (cl Client) Update(
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "PUT",
 		Path:         "/views/" + id,
-		RequestBody:  wrapCreateEntityRequest(data),
+		RequestBody:  util.WrapEntityForCreation(data),
 		ResponseBody: &body,
 	})
 	return body, resp, err

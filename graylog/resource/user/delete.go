@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
@@ -14,7 +15,7 @@ func destroy(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	if _, err := cl.User.Delete(ctx, d.Id()); err != nil {
-		return err
+		return fmt.Errorf("failed to delete user %s: %w", d.Id(), err)
 	}
 	return nil
 }

@@ -24,28 +24,42 @@ func read(d *schema.ResourceData, m interface{}) error {
 
 	// Set basic fields
 	if v, ok := data["title"].(string); ok {
-		d.Set("title", v)
+		if err := d.Set("title", v); err != nil {
+			return err
+		}
 	}
 	if v, ok := data["description"].(string); ok {
-		d.Set("description", v)
+		if err := d.Set("description", v); err != nil {
+			return err
+		}
 	}
 	if v, ok := data["summary"].(string); ok {
-		d.Set("summary", v)
+		if err := d.Set("summary", v); err != nil {
+			return err
+		}
 	}
 	if v, ok := data["owner"].(string); ok {
-		d.Set("owner", v)
+		if err := d.Set("owner", v); err != nil {
+			return err
+		}
 	}
 	if v, ok := data["created_at"].(string); ok {
-		d.Set("created_at", v)
+		if err := d.Set("created_at", v); err != nil {
+			return err
+		}
 	}
 	if v, ok := data["search_id"].(string); ok {
-		d.Set("search_id", v)
+		if err := d.Set("search_id", v); err != nil {
+			return err
+		}
 	}
 
 	// Extract state information
 	if stateMap, ok := data["state"].(map[string]interface{}); ok {
 		for stateID, stateData := range stateMap {
-			d.Set("state_id", stateID)
+			if err := d.Set("state_id", stateID); err != nil {
+				return err
+			}
 
 			state, ok := stateData.(map[string]interface{})
 			if !ok {
@@ -60,7 +74,9 @@ func read(d *schema.ResourceData, m interface{}) error {
 						selectedFields = append(selectedFields, s)
 					}
 				}
-				d.Set("selected_fields", selectedFields)
+				if err := d.Set("selected_fields", selectedFields); err != nil {
+					return err
+				}
 			}
 
 			// Get query from first widget
@@ -69,10 +85,14 @@ func read(d *schema.ResourceData, m interface{}) error {
 					// Get timerange
 					if tr, ok := widget["timerange"].(map[string]interface{}); ok {
 						if t, ok := tr["type"].(string); ok {
-							d.Set("timerange_type", t)
+							if err := d.Set("timerange_type", t); err != nil {
+								return err
+							}
 						}
 						if r, ok := tr["range"].(float64); ok {
-							d.Set("timerange_range", int(r))
+							if err := d.Set("timerange_range", int(r)); err != nil {
+								return err
+							}
 						}
 					}
 
@@ -84,13 +104,17 @@ func read(d *schema.ResourceData, m interface{}) error {
 								streamIDs = append(streamIDs, id)
 							}
 						}
-						d.Set("streams", streamIDs)
+						if err := d.Set("streams", streamIDs); err != nil {
+							return err
+						}
 					}
 
 					// Get query
 					if q, ok := widget["query"].(map[string]interface{}); ok {
 						if qs, ok := q["query_string"].(string); ok {
-							d.Set("query", qs)
+							if err := d.Set("query", qs); err != nil {
+								return err
+							}
 						}
 					}
 
@@ -99,10 +123,14 @@ func read(d *schema.ResourceData, m interface{}) error {
 						if sorts, ok := config["sort"].([]interface{}); ok && len(sorts) > 0 {
 							if sort, ok := sorts[0].(map[string]interface{}); ok {
 								if f, ok := sort["field"].(string); ok {
-									d.Set("sort_field", f)
+									if err := d.Set("sort_field", f); err != nil {
+										return err
+									}
 								}
 								if o, ok := sort["order"].(string); ok {
-									d.Set("sort_order", o)
+									if err := d.Set("sort_order", o); err != nil {
+										return err
+									}
 								}
 							}
 						}
