@@ -42,8 +42,22 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	}
 	// force type = DASHBOARD
 	data["type"] = "DASHBOARD"
+	// Convert *schema.Set fields in widgets to []interface{} before deep copy
+	// (schema.Set contains SchemaSetFunc which cannot be JSON marshaled)
+	rawState := data[keyState].(map[string]interface{})
+	if rawWidgets, ok := rawState[keyWidgets].([]interface{}); ok {
+		for _, w := range rawWidgets {
+			if widget, ok := w.(map[string]interface{}); ok {
+				if s, ok := widget["streams"]; ok {
+					if set, ok := s.(*schema.Set); ok {
+						widget["streams"] = set.List()
+					}
+				}
+			}
+		}
+	}
 	// deep copy state to avoid mutating ResourceData during API conversion
-	state, err := deepCopyMap(data[keyState].(map[string]interface{}))
+	state, err := deepCopyMap(rawState)
 	if err != nil {
 		return nil, err
 	}
