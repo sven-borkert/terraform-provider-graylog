@@ -612,7 +612,7 @@ resource "graylog_event_definition" "high_error_rate" {
     execute_every_ms  = 300000
     series = [{
       id       = "count-"
-      function = "count"
+      type     = "count"
       field    = null
     }]
     conditions = {
