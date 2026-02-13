@@ -77,6 +77,68 @@ func SchemaDiffSuppressJSONString(k, oldV, newV string, d *schema.ResourceData) 
 	return b
 }
 
+// SchemaDiffSuppressJSONSubset suppresses diffs when the planned (new) JSON value
+// is a subset of the state (old) JSON value. This handles cases where the API
+// enriches the config with additional default fields not specified by the user.
+func SchemaDiffSuppressJSONSubset(k, oldV, newV string, d *schema.ResourceData) bool {
+	// First try exact equality
+	b, err := dataeq.JSON.Equal([]byte(oldV), []byte(newV))
+	if err == nil && b {
+		return true
+	}
+
+	var oldData, newData interface{}
+	if err := json.Unmarshal([]byte(oldV), &oldData); err != nil {
+		return false
+	}
+	if err := json.Unmarshal([]byte(newV), &newData); err != nil {
+		return false
+	}
+
+	return jsonIsSubset(newData, oldData)
+}
+
+// jsonIsSubset checks if 'subset' is contained within 'superset'.
+// For maps: all keys in subset must exist in superset with matching values.
+// For slices: must have same length with each element matching.
+// For scalars: must be equal.
+func jsonIsSubset(subset, superset interface{}) bool {
+	switch s := subset.(type) {
+	case map[string]interface{}:
+		sup, ok := superset.(map[string]interface{})
+		if !ok {
+			return false
+		}
+		for k, v := range s {
+			sv, ok := sup[k]
+			if !ok {
+				return false
+			}
+			if !jsonIsSubset(v, sv) {
+				return false
+			}
+		}
+		return true
+	case []interface{}:
+		sup, ok := superset.([]interface{})
+		if !ok {
+			return false
+		}
+		if len(s) != len(sup) {
+			return false
+		}
+		for i := range s {
+			if !jsonIsSubset(s[i], sup[i]) {
+				return false
+			}
+		}
+		return true
+	default:
+		// Compare scalars (string, float64, bool, nil)
+		return fmt.Sprintf("%v", subset) == fmt.Sprintf("%v", superset)
+	}
+}
+
 func GenStateFunc(keys ...string) schema.StateContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 		a := strings.Split(d.Id(), "/")
