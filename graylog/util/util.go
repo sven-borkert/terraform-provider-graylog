@@ -2,6 +2,8 @@ package util
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -240,4 +242,11 @@ func RemoveComputedFields(data map[string]interface{}) {
 	delete(data, "created_at")
 	delete(data, "creator_user_id")
 	delete(data, "last_modified")
+}
+
+// ComputeSHA256 computes the SHA256 hash of a string and returns it as a hex string.
+// This is used to create content hashes for cache invalidation workarounds.
+func ComputeSHA256(content string) string {
+	hash := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(hash[:])
 }
