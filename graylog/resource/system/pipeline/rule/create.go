@@ -19,6 +19,8 @@ func create(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	delete(data, "content_hash")
+
 	ds, _, err := cl.PipelineRule.Create(ctx, data)
 	if err != nil {
 		return fmt.Errorf("failed to create a pipeline rule: %w", err)
