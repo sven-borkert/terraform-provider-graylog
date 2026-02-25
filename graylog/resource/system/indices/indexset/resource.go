@@ -31,21 +31,21 @@ func Resource() *schema.Resource {
 			},
 			"rotation_strategy_class": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"rotation_strategy": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
 			"retention_strategy_class": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"retention_strategy": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
