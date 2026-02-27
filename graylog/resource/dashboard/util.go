@@ -451,6 +451,7 @@ func injectStreamsFromSearch(viewData, searchData map[string]interface{}) {
 }
 
 // injectQueryFromSearch maps per-tab query strings from search queries back to view state entries.
+// It reads from the persistent filter field (preferred) or falls back to query.query_string.
 func injectQueryFromSearch(viewData, searchData map[string]interface{}) {
 	queryStrings := map[string]string{}
 	if queries, ok := searchData["queries"].([]interface{}); ok {
@@ -462,6 +463,30 @@ func injectQueryFromSearch(viewData, searchData map[string]interface{}) {
 			qID, ok := query["id"].(string)
 			if !ok || qID == "" {
 				continue
+			}
+			// Prefer persistent filter over query.query_string
+			if filterObj, ok := query["filter"].(map[string]interface{}); ok {
+				// Direct query_string filter
+				if fq, ok := filterObj["query"].(string); ok && fq != "" {
+					queryStrings[qID] = fq
+					continue
+				}
+				// Compound "or" filter wrapping a query_string filter
+				if filters, ok := filterObj["filters"].([]interface{}); ok {
+					for _, f := range filters {
+						if fm, ok := f.(map[string]interface{}); ok {
+							if ft, _ := fm["type"].(string); ft == "query_string" {
+								if fq, ok := fm["query"].(string); ok && fq != "" {
+									queryStrings[qID] = fq
+									break
+								}
+							}
+						}
+					}
+					if _, found := queryStrings[qID]; found {
+						continue
+					}
+				}
 			}
 			if qObj, ok := query["query"].(map[string]interface{}); ok {
 				if qs, ok := qObj["query_string"].(string); ok {

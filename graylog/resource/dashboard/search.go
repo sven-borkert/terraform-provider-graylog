@@ -52,13 +52,32 @@ func generateQueryFromWidgets(stateID string, queryString string, widgets []inte
 		widgetMapping[widgetID] = []string{searchTypeID}
 	}
 
+	// Build persistent filter from queryString so it survives UI interactions.
+	// The query.query_string maps to the editable search bar which resets on search/timeframe change,
+	// so we use the "filter" field instead for persistent filtering.
+	// Note: The filter UI ("Search Filters") is a Graylog commercial edition feature.
+	// In open-source Graylog, the filter is applied but not visible in the dashboard UI.
+	var filter interface{}
+	if queryString != "" {
+		filter = map[string]interface{}{
+			"type": "or",
+			"filters": []interface{}{
+				map[string]interface{}{
+					"type":    "query_string",
+					"query":   queryString,
+					"filters": []interface{}{},
+				},
+			},
+		}
+	}
+
 	query := map[string]interface{}{
 		"id":      stateID,
 		"filters": []interface{}{},
-		"filter":  nil,
+		"filter":  filter,
 		"query": map[string]interface{}{
 			"type":         "elasticsearch",
-			"query_string": queryString,
+			"query_string": "",
 		},
 		"timerange":    defaultTimerange,
 		"search_types": searchTypes,
