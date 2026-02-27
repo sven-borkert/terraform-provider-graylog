@@ -45,8 +45,14 @@ func generateQueryFromWidgets(stateID string, queryString string, widgets []inte
 			widgetStreams = s
 		}
 
+		// Extract per-widget query
+		var widgetQuery map[string]interface{}
+		if q, ok := widget["query"].(map[string]interface{}); ok {
+			widgetQuery = q
+		}
+
 		// Create the search_type from widget config
-		searchType := createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams)
+		searchType := createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams, widgetQuery)
 
 		searchTypes = append(searchTypes, searchType)
 		widgetMapping[widgetID] = []string{searchTypeID}
@@ -96,17 +102,29 @@ func buildSearchObject(queries []interface{}) map[string]interface{} {
 }
 
 // createSearchTypeFromWidgetConfig converts a widget config to a search_type (pivot query).
-func createSearchTypeFromWidgetConfig(id string, config map[string]interface{}, widgetTimerange interface{}, defaultTimerange map[string]interface{}, streams []interface{}) map[string]interface{} {
+func createSearchTypeFromWidgetConfig(id string, config map[string]interface{}, widgetTimerange interface{}, defaultTimerange map[string]interface{}, streams []interface{}, widgetQuery map[string]interface{}) map[string]interface{} {
 	if streams == nil {
 		streams = []interface{}{}
 	}
+
+	// Include widget-level query in the search_type so it's applied on initial dashboard load
+	var query interface{}
+	if widgetQuery != nil {
+		if qs, ok := widgetQuery["query_string"].(string); ok && qs != "" {
+			query = map[string]interface{}{
+				"type":         "elasticsearch",
+				"query_string": qs,
+			}
+		}
+	}
+
 	searchType := map[string]interface{}{
 		"id":                id,
 		"type":              "pivot",
 		"name":              "chart",
 		"filter":            nil,
 		"filters":           []interface{}{},
-		"query":             nil,
+		"query":             query,
 		"streams":           streams,
 		"stream_categories": []interface{}{},
 		"rollup":            true,
