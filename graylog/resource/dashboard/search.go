@@ -26,8 +26,8 @@ func generateQueryFromWidgets(stateID string, queryString string, widgets []inte
 			widgetType = t
 		}
 
-		// Only aggregation widgets need search_types
-		if widgetType != "aggregation" {
+		// Only aggregation and messages widgets need search_types
+		if widgetType != "aggregation" && widgetType != "messages" {
 			continue
 		}
 
@@ -51,8 +51,12 @@ func generateQueryFromWidgets(stateID string, queryString string, widgets []inte
 			widgetQuery = q
 		}
 
-		// Create the search_type from widget config
-		searchType := createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams, widgetQuery)
+		var searchType map[string]interface{}
+		if widgetType == "messages" {
+			searchType = createMessagesSearchType(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams, widgetQuery)
+		} else {
+			searchType = createSearchTypeFromWidgetConfig(searchTypeID, config, widget[keyTimerange], defaultTimerange, widgetStreams, widgetQuery)
+		}
 
 		searchTypes = append(searchTypes, searchType)
 		widgetMapping[widgetID] = []string{searchTypeID}
@@ -99,6 +103,77 @@ func buildSearchObject(queries []interface{}) map[string]interface{} {
 		"skip_no_streams_check": false,
 		"queries":               queries,
 	}
+}
+
+// createMessagesSearchType creates a search_type for a messages (message list) widget.
+func createMessagesSearchType(id string, config map[string]interface{}, widgetTimerange interface{}, defaultTimerange map[string]interface{}, streams []interface{}, widgetQuery map[string]interface{}) map[string]interface{} {
+	if streams == nil {
+		streams = []interface{}{}
+	}
+
+	// Include widget-level query in the search_type
+	var query interface{}
+	if widgetQuery != nil {
+		if qs, ok := widgetQuery["query_string"].(string); ok && qs != "" {
+			query = map[string]interface{}{
+				"type":         "elasticsearch",
+				"query_string": qs,
+			}
+		}
+	}
+
+	// Convert widget sort format to search_type sort format
+	// Widget sort: [{"type": "pivot", "field": "timestamp", "direction": "Descending"}]
+	// Search type sort: [{"field": "timestamp", "order": "DESC"}]
+	var searchSort []interface{}
+	if sort, ok := config["sort"].([]interface{}); ok {
+		for _, s := range sort {
+			if sortItem, ok := s.(map[string]interface{}); ok {
+				order := "DESC"
+				if dir, ok := sortItem["direction"].(string); ok && dir == "Ascending" {
+					order = "ASC"
+				}
+				field := "timestamp"
+				if f, ok := sortItem["field"].(string); ok {
+					field = f
+				}
+				searchSort = append(searchSort, map[string]interface{}{
+					"field": field,
+					"order": order,
+				})
+			}
+		}
+	}
+	if searchSort == nil {
+		searchSort = []interface{}{map[string]interface{}{"field": "timestamp", "order": "DESC"}}
+	}
+
+	searchType := map[string]interface{}{
+		"id":         id,
+		"type":       "messages",
+		"name":       "messages",
+		"filter":     nil,
+		"filters":    []interface{}{},
+		"query":      query,
+		"streams":    streams,
+		"decorators": []interface{}{},
+		"limit":      150,
+		"offset":     0,
+		"sort":       searchSort,
+	}
+
+	// Set timerange from widget or use default
+	if widgetTimerange != nil {
+		if tr, ok := widgetTimerange.(map[string]interface{}); ok && len(tr) > 0 {
+			searchType["timerange"] = tr
+		} else {
+			searchType["timerange"] = defaultTimerange
+		}
+	} else {
+		searchType["timerange"] = defaultTimerange
+	}
+
+	return searchType
 }
 
 // createSearchTypeFromWidgetConfig converts a widget config to a search_type (pivot query).
