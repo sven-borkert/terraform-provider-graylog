@@ -20,6 +20,7 @@ import (
 	streamRule "github.com/sven-borkert/terraform-provider-graylog/graylog/client/stream/rule"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/search/saved"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/grok"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/fieldtype"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/indexset"
 	indextemplate "github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/indices/template"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client/system/input"
@@ -47,6 +48,7 @@ type Client struct {
 	EventDefinition         definition.Client
 	EventNotification       notification.Client
 	Extractor               extractor.Client
+	FieldType               fieldtype.Client
 	Grok                    grok.Client
 	IndexSet                indexset.Client
 	IndexSetTemplate        indextemplate.Client
@@ -111,6 +113,9 @@ func New(m interface{}) (Client, error) {
 			Client: httpClient,
 		},
 		Extractor: extractor.Client{
+			Client: httpClient,
+		},
+		FieldType: fieldtype.Client{
 			Client: httpClient,
 		},
 		Grok: grok.Client{

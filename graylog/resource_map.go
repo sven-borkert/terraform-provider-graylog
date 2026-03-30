@@ -18,6 +18,7 @@ import (
 	streamOutput "github.com/sven-borkert/terraform-provider-graylog/graylog/resource/stream/output"
 	streamRule "github.com/sven-borkert/terraform-provider-graylog/graylog/resource/stream/rule"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/resource/system/grok"
+	fieldType "github.com/sven-borkert/terraform-provider-graylog/graylog/resource/system/indices/fieldtype"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/resource/system/indices/indexset"
 	indexTemplate "github.com/sven-borkert/terraform-provider-graylog/graylog/resource/system/indices/template"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/resource/system/input"
@@ -42,6 +43,7 @@ var resourceMap = map[string]*schema.Resource{
 	"graylog_extractor":                  extractor.Resource(),
 	"graylog_grok_pattern":               grok.Resource(),
 	"graylog_index_set":                  indexset.Resource(),
+	"graylog_index_set_field_type":       fieldType.Resource(),
 	"graylog_index_set_template":         indexTemplate.Resource(),
 	"graylog_input":                      input.Resource(),
 	"graylog_input_static_fields":        staticfield.Resource(),
