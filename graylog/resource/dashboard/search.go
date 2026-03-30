@@ -289,9 +289,9 @@ func convertPivotToGroup(pivot map[string]interface{}) map[string]interface{} {
 		if limit, ok := cfg["limit"]; ok {
 			group["limit"] = limit
 		}
-		// For "time" type, extract interval
-		if interval, ok := cfg["interval"]; ok {
-			group["interval"] = interval
+		// For "time" type, extract interval and convert to search API format
+		if interval, ok := cfg["interval"].(map[string]interface{}); ok {
+			group["interval"] = convertIntervalToSearchFormat(interval)
 		}
 	}
 
@@ -301,6 +301,37 @@ func convertPivotToGroup(pivot map[string]interface{}) map[string]interface{} {
 	}
 
 	return group
+}
+
+// convertIntervalToSearchFormat converts a widget interval config to the search API format.
+// The widget/view API uses { type: "timeunit", value: 1, unit: "hours" }
+// The search API uses { type: "timeunit", timeunit: "1h" }
+func convertIntervalToSearchFormat(interval map[string]interface{}) map[string]interface{} {
+	t, _ := interval["type"].(string)
+	if t != "timeunit" {
+		return interval
+	}
+
+	unitMap := map[string]string{
+		"seconds": "s",
+		"minutes": "m",
+		"hours":   "h",
+		"days":    "d",
+		"weeks":   "w",
+		"months":  "M",
+	}
+
+	value, _ := interval["value"].(float64)
+	unit, _ := interval["unit"].(string)
+	abbrev, ok := unitMap[unit]
+	if !ok {
+		return interval
+	}
+
+	return map[string]interface{}{
+		"type":     "timeunit",
+		"timeunit": fmt.Sprintf("%d%s", int(value), abbrev),
+	}
 }
 
 // convertSeries converts a widget series to a search_type series.
