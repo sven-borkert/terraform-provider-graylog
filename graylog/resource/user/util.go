@@ -3,10 +3,12 @@ package user
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/convert"
+	"github.com/sven-borkert/terraform-provider-graylog/graylog/util"
 )
 
 const (
 	keyUsername       = "username"
+	keyPassword       = "password"
 	keyPermissions    = "permissions"
 	keyClientAddress  = "client_address"
 	keyExternal       = "external"
@@ -39,6 +41,10 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 }
 
 func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) error {
+	// The API returns the Mongo ObjectId under "id"; the schema exposes it as
+	// "user_id". Rename so the computed field is populated in state (it is
+	// required to address the update and password endpoints in Graylog 7).
+	util.RenameKey(data, "id", keyUserID)
 	if err := convert.SetResourceData(d, Resource(), data); err != nil {
 		return err
 	}

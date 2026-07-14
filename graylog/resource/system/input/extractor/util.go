@@ -23,7 +23,6 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	if err != nil {
 		return nil, err
 	}
-	util.RenameKey(data, "cursor_strategy", "cut_or_copy")
 	util.RenameKey(data, "type", "extractor_type")
 	util.SetDefaultValue(data, "target_field", "")
 	util.SetDefaultValue(data, "condition_value", "")
@@ -33,14 +32,32 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	}
 	util.RenameKey(data, keyExtractorID, keyID)
 
-	converters := convert.ListToMap(data[keyConverters].([]interface{}), keyType)
-	for k, v := range converters {
-		converters[k] = v.(map[string]interface{})[keyConfig]
+	// Graylog 7 expects converters as a list of {"type": ..., "config": {...}} objects
+	// (CreateExtractorRequest.List<Map>), with config as a parsed JSON object. Build
+	// fresh maps rather than mutating the elements returned by d.Get, which the SDK
+	// caches internally.
+	if converters, ok := data[keyConverters].([]interface{}); ok {
+		newConverters := make([]interface{}, 0, len(converters))
+		for _, a := range converters {
+			elem, ok := a.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			conv := make(map[string]interface{}, len(elem))
+			for k, v := range elem {
+				conv[k] = v
+			}
+			if cfg, ok := conv[keyConfig].(string); ok {
+				parsed, err := convert.StringJSONToData(cfg)
+				if err != nil {
+					return nil, err
+				}
+				conv[keyConfig] = parsed
+			}
+			newConverters = append(newConverters, conv)
+		}
+		data[keyConverters] = newConverters
 	}
-	if err := convert.JSONToData(converters); err != nil {
-		return nil, err
-	}
-	data[keyConverters] = converters
 
 	return data, nil
 }

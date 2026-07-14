@@ -28,9 +28,10 @@ func (cl Client) Get(
 	return body, resp, err
 }
 
-// Gets returns all pipelines.
-func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
-	body := map[string]interface{}{}
+// Gets returns all pipelines. The GET /system/pipelines/pipeline endpoint
+// returns a bare JSON array, not a paginated object.
+func (cl Client) Gets(ctx context.Context) ([]map[string]interface{}, *http.Response, error) {
+	body := []map[string]interface{}{}
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "GET",
 		Path:         "/system/pipelines/pipeline",

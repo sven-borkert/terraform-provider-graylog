@@ -66,16 +66,15 @@ func TestDataSourcePipelineByTitle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	listBody := `{
-  "pipelines": [
-    {
-      "id": "5ea3e4122ab79c001275832c",
-      "title": "tf",
-      "description": "desc",
-      "source": "pipeline \"tf\"\nstage 0 match either\nend\n"
-    }
-  ]
-}`
+	// GET /system/pipelines/pipeline returns a bare JSON array, not a paginated object.
+	listBody := `[
+  {
+    "id": "5ea3e4122ab79c001275832c",
+    "title": "tf",
+    "description": "desc",
+    "source": "pipeline \"tf\"\nstage 0 match either\nend\n"
+  }
+]`
 
 	getRoute := flute.Route{
 		Name: "list pipelines",

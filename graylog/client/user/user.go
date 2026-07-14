@@ -68,9 +68,11 @@ func (cl Client) Create(ctx context.Context, user map[string]interface{}) (*http
 	return resp, err
 }
 
-func (cl Client) Update(ctx context.Context, name string, user map[string]interface{}) (*http.Response, error) {
-	if name == "" {
-		return nil, errors.New("username is required")
+// Update changes a user. In Graylog 7 the update endpoint is addressed by the
+// user's ID (Mongo ObjectId), not by username.
+func (cl Client) Update(ctx context.Context, id string, user map[string]interface{}) (*http.Response, error) {
+	if id == "" {
+		return nil, errors.New("user id is required")
 	}
 	if user == nil {
 		return nil, errors.New("request body is nil")
@@ -78,8 +80,24 @@ func (cl Client) Update(ctx context.Context, name string, user map[string]interf
 
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:      "PUT",
-		Path:        "/users/" + name,
+		Path:        "/users/" + id,
 		RequestBody: user,
+	})
+	return resp, err
+}
+
+// ChangePassword sets a user's password. In Graylog 7 the main update endpoint
+// ignores the password field; passwords are changed via a dedicated endpoint
+// addressed by the user's ID.
+func (cl Client) ChangePassword(ctx context.Context, id, password string) (*http.Response, error) {
+	if id == "" {
+		return nil, errors.New("user id is required")
+	}
+
+	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+		Method:      "PUT",
+		Path:        "/users/" + id + "/password",
+		RequestBody: map[string]interface{}{"password": password},
 	})
 	return resp, err
 }

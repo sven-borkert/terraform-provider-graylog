@@ -24,25 +24,13 @@ func read(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if title, ok := d.GetOk("title"); ok {
-		list, _, err := cl.Pipeline.Gets(ctx)
+		pipelines, _, err := cl.Pipeline.Gets(ctx)
 		if err != nil {
 			return err
 		}
-		raw, ok := list["pipelines"]
-		if !ok {
-			return errors.New("unexpected API response: 'pipelines' field missing")
-		}
-		pipelines, ok := raw.([]interface{})
-		if !ok {
-			return errors.New("unexpected API response: 'pipelines' is not a list")
-		}
 		var hit map[string]interface{}
 		matches := 0
-		for _, p := range pipelines {
-			pm, ok := p.(map[string]interface{})
-			if !ok {
-				continue
-			}
+		for _, pm := range pipelines {
 			if pm["title"] == title {
 				hit = pm
 				matches++

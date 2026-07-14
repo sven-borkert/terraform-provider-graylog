@@ -52,9 +52,9 @@ func TestAccExtractor(t *testing.T) {
 			BodyJSONString: `{
   "title": "test",
   "extractor_type": "json",
-  "converters": {},
+  "converters": [],
   "order": 0,
-  "cut_or_copy": "copy",
+  "cursor_strategy": "copy",
   "source_field": "message",
   "target_field": "none",
   "extractor_config": {
@@ -249,9 +249,9 @@ EOF
 			BodyJSONString: `{
   "title": "test updated",
   "extractor_type": "json",
-  "converters": {},
+  "converters": [],
   "order": 0,
-  "cut_or_copy": "copy",
+  "cursor_strategy": "copy",
   "source_field": "message",
   "target_field": "none",
   "extractor_config": {
@@ -529,6 +529,115 @@ EOF
 		Steps: []resource.TestStep{
 			createStep,
 			updateStep,
+		},
+	})
+}
+
+// TestAccExtractorConverter verifies that converters are sent to Graylog 7 as a
+// list of {"type", "config"} objects (config parsed as JSON), not the pre-5.0
+// map shape.
+func TestAccExtractorConverter(t *testing.T) {
+	if err := testutil.SetEnv(); err != nil {
+		t.Fatal(err)
+	}
+
+	getBody := ""
+	postURLPath := "/api/system/inputs/5e9989952ab79c001156f7d2/extractors"
+	resourceURLPath := postURLPath + "/aaaaaaaa-86a8-11ea-a7d4-0242ac120004"
+	resourceName := "graylog_extractor.test_conv"
+
+	entityBody := `{
+  "id": "aaaaaaaa-86a8-11ea-a7d4-0242ac120004",
+  "title": "conv",
+  "type": "regex",
+  "converters": [{"type": "lowercase", "config": {}}],
+  "order": 0,
+  "cursor_strategy": "copy",
+  "source_field": "message",
+  "target_field": "",
+  "extractor_config": {"regex_value": "foo"},
+  "condition_type": "none",
+  "condition_value": ""
+}`
+
+	getRoute := flute.Route{
+		Name:    "get extractor",
+		Matcher: flute.Matcher{Method: "GET"},
+		Tester:  flute.Tester{Path: resourceURLPath, PartOfHeader: testutil.Header()},
+		Response: flute.Response{
+			Response: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(strings.NewReader(getBody)),
+				}, nil
+			},
+		},
+	}
+
+	postRoute := flute.Route{
+		Name:    "create extractor",
+		Matcher: flute.Matcher{Method: "POST"},
+		Tester: flute.Tester{
+			Path:         postURLPath,
+			PartOfHeader: testutil.Header(),
+			BodyJSONString: `{
+  "title": "conv",
+  "extractor_type": "regex",
+  "converters": [{"type": "lowercase", "config": {}}],
+  "order": 0,
+  "cursor_strategy": "copy",
+  "source_field": "message",
+  "target_field": "",
+  "extractor_config": {"regex_value": "foo"},
+  "condition_type": "none",
+  "condition_value": ""
+}`,
+			Test: func(t *testing.T, req *http.Request, svc flute.Service, route flute.Route) {
+				getBody = entityBody
+			},
+		},
+		Response: flute.Response{
+			Base:       http.Response{StatusCode: 201},
+			BodyString: `{"extractor_id": "aaaaaaaa-86a8-11ea-a7d4-0242ac120004"}`,
+		},
+	}
+
+	deleteRoute := flute.Route{
+		Name:     "delete extractor",
+		Matcher:  flute.Matcher{Method: "DELETE"},
+		Tester:   flute.Tester{Path: resourceURLPath, PartOfHeader: testutil.Header()},
+		Response: flute.Response{Base: http.Response{StatusCode: 204}},
+	}
+
+	resource.Test(t, resource.TestCase{
+		Providers: testutil.SingleResourceProviders("graylog_extractor", Resource()),
+		Steps: []resource.TestStep{
+			{
+				ResourceName: resourceName,
+				PreConfig: func() {
+					testutil.SetHTTPClient(t, getRoute, postRoute, deleteRoute)
+				},
+				Config: `
+resource "graylog_extractor" "test_conv" {
+  input_id         = "5e9989952ab79c001156f7d2"
+  title            = "conv"
+  type             = "regex"
+  cursor_strategy  = "copy"
+  source_field     = "message"
+  condition_type   = "none"
+  order            = 0
+  extractor_config = "{\"regex_value\":\"foo\"}"
+
+  converters {
+    type   = "lowercase"
+    config = "{}"
+  }
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "converters.0.type", "lowercase"),
+				),
+			},
 		},
 	})
 }
