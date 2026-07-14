@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 )
@@ -25,14 +27,41 @@ func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *h
 	return body, resp, err
 }
 
+// Gets lists all dashboards (View summaries), accumulating every page. The
+// endpoint is paginated (default 50 per page), so a single request would miss
+// dashboards beyond the first page. The result is normalized to {"elements": [...]}.
 func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
-	body := map[string]interface{}{}
-	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
-		Method:       "GET",
-		Path:         "/dashboards",
-		ResponseBody: &body,
-	})
-	return body, resp, err
+	const perPage = 100
+	elements := []interface{}{}
+	var lastResp *http.Response
+	for page := 1; ; page++ {
+		body := map[string]interface{}{}
+		query := url.Values{}
+		query.Set("page", strconv.Itoa(page))
+		query.Set("per_page", strconv.Itoa(perPage))
+		resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+			Method:       "GET",
+			Path:         "/dashboards",
+			Query:        query,
+			ResponseBody: &body,
+		})
+		lastResp = resp
+		if err != nil {
+			return nil, resp, err
+		}
+		// Graylog 7 returns "elements"; fall back to legacy keys for compatibility.
+		pageElems, _ := body["elements"].([]interface{})
+		if pageElems == nil {
+			if pageElems, _ = body["dashboards"].([]interface{}); pageElems == nil {
+				pageElems, _ = body["views"].([]interface{})
+			}
+		}
+		elements = append(elements, pageElems...)
+		if len(pageElems) < perPage {
+			break
+		}
+	}
+	return map[string]interface{}{"elements": elements}, lastResp, nil
 }
 
 func (cl Client) Create(

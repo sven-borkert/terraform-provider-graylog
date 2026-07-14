@@ -173,7 +173,8 @@ func TestAccDashboard_ByDashboardID(t *testing.T) {
 			Method: "GET",
 		},
 		Tester: flute.Tester{
-			Path:         "/api/dashboards/5ea8315b2ab79c00129dcba2",
+			// Graylog 7 reads a single dashboard via the Views API.
+			Path:         "/api/views/5ea8315b2ab79c00129dcba2",
 			PartOfHeader: testutil.Header(),
 		},
 		Response: flute.Response{

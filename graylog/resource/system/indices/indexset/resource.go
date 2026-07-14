@@ -88,6 +88,7 @@ func Resource() *schema.Resource {
 			"writable": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  true,
 			},
 			"default": {
 				Type:     schema.TypeBool,

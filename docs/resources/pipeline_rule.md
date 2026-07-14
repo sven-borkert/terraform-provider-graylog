@@ -12,6 +12,15 @@
 
 Nothing.
 
+## Known limitations
+
+This resource manages the rule `source` only. Graylog 7 stores an additional
+`rule_builder` representation for rules created with the UI's visual rule builder.
+Because the provider does not model `rule_builder`, updating a rule that was
+originally created in the rule builder clears that visual representation on the
+server (the rule continues to work from its `source`). Manage such rules entirely
+in Terraform, or edit them only in the Graylog UI.
+
 ## Import
 
 `graylog_pipeline_rule` can be imported using the Pipeline Rule id, e.g.

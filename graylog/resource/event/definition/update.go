@@ -25,7 +25,7 @@ func update(d *schema.ResourceData, m interface{}) error {
 	// Graylog 7 Update requires id in body
 	data[keyID] = d.Id()
 
-	if _, _, err := cl.EventDefinition.Update(ctx, d.Id(), data); err != nil {
+	if _, _, err := cl.EventDefinition.Update(ctx, d.Id(), data, d.Get(keyScheduled).(bool)); err != nil {
 		return fmt.Errorf("failed to update a event definition %s: %w", d.Id(), err)
 	}
 	return nil

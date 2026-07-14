@@ -9,6 +9,7 @@ const (
 	keyID        = "id"
 	keyConfig    = "config"
 	keyFieldSpec = "field_spec"
+	keyScheduled = "scheduled"
 )
 
 func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -20,6 +21,10 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	if err := convert.JSONToData(data, keyConfig, keyFieldSpec); err != nil {
 		return nil, err
 	}
+
+	// scheduled is a provider-only field mapped to the ?schedule query param,
+	// not part of the event definition body.
+	delete(data, keyScheduled)
 
 	return data, nil
 }

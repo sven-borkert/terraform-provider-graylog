@@ -45,16 +45,3 @@ func (cl Client) Create(
 	})
 	return body, resp, err
 }
-
-// Delete deletes a search by ID.
-func (cl Client) Delete(ctx context.Context, id string) (*http.Response, error) {
-	if id == "" {
-		return nil, errors.New("id is required")
-	}
-
-	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
-		Method: "DELETE",
-		Path:   "/views/search/" + id,
-	})
-	return resp, err
-}

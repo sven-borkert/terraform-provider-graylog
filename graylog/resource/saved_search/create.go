@@ -173,8 +173,8 @@ func create(d *schema.ResourceData, m interface{}) error {
 	// Create the view
 	viewResp, _, err := cl.View.Create(ctx, viewData)
 	if err != nil {
-		// Clean up the search if view creation fails
-		_, _ = cl.ViewSearch.Delete(ctx, searchID)
+		// The orphaned search is reaped by the server's periodic cleanup job;
+		// Graylog 7 has no DELETE /views/search/{id} endpoint to remove it directly.
 		return fmt.Errorf("failed to create saved search view: %w", err)
 	}
 

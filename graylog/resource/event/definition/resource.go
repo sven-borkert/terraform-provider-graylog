@@ -91,6 +91,14 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			// scheduled controls whether Graylog enables (schedules) the definition
+			// on create and update. Set to false to manage a disabled definition;
+			// otherwise every apply would re-enable it.
+			"scheduled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 			// optional
 			//	"storage": {
 			//		Type:     schema.TypeString,

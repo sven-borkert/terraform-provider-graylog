@@ -73,8 +73,8 @@ func create(d *schema.ResourceData, m interface{}) error {
 	// Create the dashboard view
 	ds, _, err := cl.View.Create(ctx, data)
 	if err != nil {
-		// Try to clean up the search if dashboard creation fails
-		_, _ = cl.ViewSearch.Delete(ctx, searchID)
+		// The orphaned search is reaped by the server's periodic cleanup job;
+		// Graylog 7 has no DELETE /views/search/{id} endpoint to remove it directly.
 		return fmt.Errorf("failed to create a dashboard view: %w", err)
 	}
 

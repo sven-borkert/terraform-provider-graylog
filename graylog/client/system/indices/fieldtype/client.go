@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 )
@@ -73,8 +75,18 @@ func (cl Client) RemoveCustomMapping(ctx context.Context, req CustomFieldMapping
 	return resp, err
 }
 
-// GetFieldType retrieves the field type for a specific field in an index set.
-// Returns nil if the field is not found or has no custom override.
+// isCustomOrigin reports whether a field type's origin indicates a custom
+// mapping managed by this provider. Graylog exposes OVERRIDDEN_INDEX and
+// OVERRIDDEN_PROFILE for fields whose type overrides the index/profile default;
+// INDEX and PROFILE origins are not custom mappings.
+func isCustomOrigin(origin string) bool {
+	return strings.HasPrefix(origin, "OVERRIDDEN")
+}
+
+// GetFieldType retrieves the custom field type mapping for a specific field in an
+// index set. It returns nil when the field has no custom override (origin is not
+// OVERRIDDEN_*), so callers can clear state after an out-of-band removal. All
+// result pages are scanned so matches beyond the first page are not missed.
 func (cl Client) GetFieldType(ctx context.Context, indexSetID, fieldName string) (*IndexSetFieldType, *http.Response, error) {
 	if indexSetID == "" {
 		return nil, nil, errors.New("index_set_id is required")
@@ -83,29 +95,40 @@ func (cl Client) GetFieldType(ctx context.Context, indexSetID, fieldName string)
 		return nil, nil, errors.New("field_name is required")
 	}
 
-	body := struct {
-		Elements []IndexSetFieldType `json:"elements"`
-	}{}
+	const perPage = 50
+	var lastResp *http.Response
+	for page := 1; ; page++ {
+		body := struct {
+			Elements []IndexSetFieldType `json:"elements"`
+		}{}
 
-	query := url.Values{}
-	query.Set("query", fieldName)
-	query.Set("per_page", "50")
+		query := url.Values{}
+		query.Set("query", fieldName)
+		query.Set("per_page", strconv.Itoa(perPage))
+		query.Set("page", strconv.Itoa(page))
 
-	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
-		Method:       "GET",
-		Path:         "/system/indices/index_sets/types/" + indexSetID,
-		Query:        query,
-		ResponseBody: &body,
-	})
-	if err != nil {
-		return nil, resp, err
-	}
+		resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+			Method:       "GET",
+			Path:         "/system/indices/index_sets/types/" + indexSetID,
+			Query:        query,
+			ResponseBody: &body,
+		})
+		lastResp = resp
+		if err != nil {
+			return nil, resp, err
+		}
 
-	for _, ft := range body.Elements {
-		if ft.FieldName == fieldName {
-			return &ft, resp, nil
+		for _, ft := range body.Elements {
+			if ft.FieldName == fieldName && isCustomOrigin(ft.Origin) {
+				ft := ft
+				return &ft, resp, nil
+			}
+		}
+
+		if len(body.Elements) < perPage {
+			break
 		}
 	}
 
-	return nil, resp, nil
+	return nil, lastResp, nil
 }

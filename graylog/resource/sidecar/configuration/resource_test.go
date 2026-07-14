@@ -47,11 +47,13 @@ func TestAccConfiguration(t *testing.T) {
 		Tester: flute.Tester{
 			Path:         "/api/sidecar/configurations",
 			PartOfHeader: testutil.Header(),
+			// Bare DTO (no entity wrapper), and tags round-trip.
 			BodyJSONString: `{
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`,
 			Test: func(t *testing.T, req *http.Request, svc flute.Service, route flute.Route) {
 				configurationBody = `{
@@ -59,7 +61,8 @@ func TestAccConfiguration(t *testing.T) {
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`
 			},
 		},
@@ -72,7 +75,8 @@ func TestAccConfiguration(t *testing.T) {
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`,
 		},
 	}
@@ -88,10 +92,12 @@ resource "graylog_sidecar_configuration" "test" {
   color        = "#00796b"
   collector_id = "5ec65adb2ab79c001226759c"
   template     = "fields_under_root: true"
+  tags         = ["linux"]
 }
 `,
 		Check: resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr(resourceName, "name", "foo"),
+			resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 		),
 	}
 
@@ -107,7 +113,8 @@ resource "graylog_sidecar_configuration" "test" {
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo_updated",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`,
 			Test: func(t *testing.T, req *http.Request, svc flute.Service, route flute.Route) {
 				configurationBody = `{
@@ -115,7 +122,8 @@ resource "graylog_sidecar_configuration" "test" {
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo_updated",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`
 			},
 		},
@@ -128,7 +136,8 @@ resource "graylog_sidecar_configuration" "test" {
   "collector_id": "5ec65adb2ab79c001226759c",
   "name": "foo_updated",
   "color": "#00796b",
-  "template": "fields_under_root: true"
+  "template": "fields_under_root: true",
+  "tags": ["linux"]
 }`,
 		},
 	}
@@ -160,10 +169,12 @@ resource "graylog_sidecar_configuration" "test" {
   color        = "#00796b"
   collector_id = "5ec65adb2ab79c001226759c"
   template     = "fields_under_root: true"
+  tags         = ["linux"]
 }
 `,
 		Check: resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr(resourceName, "name", "foo_updated"),
+			resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 		),
 	}
 

@@ -49,11 +49,31 @@ func TestDataSourceSavedSearch(t *testing.T) {
 		},
 	}
 
+	// The read fetches the full view to resolve state_id.
+	viewRoute := flute.Route{
+		Name: "get saved search view",
+		Matcher: flute.Matcher{
+			Method: "GET",
+			Path:   "/api/views/abc123",
+		},
+		Tester: flute.Tester{
+			PartOfHeader: testutil.Header(),
+		},
+		Response: flute.Response{
+			Response: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(strings.NewReader(`{"id": "abc123", "state": {"tab-1": {}}}`)),
+				}, nil
+			},
+		},
+	}
+
 	resource.Test(t, resource.TestCase{
 		Providers: testutil.SingleDataSourceProviders("graylog_saved_search", DataSource()),
 		Steps: []resource.TestStep{
 			{
-				PreConfig: func() { testutil.SetHTTPClient(t, listRoute) },
+				PreConfig: func() { testutil.SetHTTPClient(t, listRoute, viewRoute) },
 				Config: `
 data "graylog_saved_search" "example" {
   title = "My Saved Search"

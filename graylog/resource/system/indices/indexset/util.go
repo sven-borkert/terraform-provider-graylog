@@ -58,7 +58,11 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	// Remove computed/unsupported fields from request (id is added back only for Update)
 	delete(data, "can_be_default")
 	delete(data, "creation_date")
-	delete(data, "field_type_profile")
+	// Only drop field_type_profile when unset: sending it empty makes the server
+	// clear an assigned profile on every update.
+	if v, ok := data["field_type_profile"].(string); ok && v == "" {
+		delete(data, "field_type_profile")
+	}
 	if v, ok := data["index_template_type"].(string); ok && v == "" {
 		data["index_template_type"] = "default"
 	}

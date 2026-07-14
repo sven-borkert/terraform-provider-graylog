@@ -51,13 +51,24 @@ func readList(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	templates, _, err := cl.IndexSetTemplate.BuiltIns(ctx, nil)
+	builtIns, _, err := cl.IndexSetTemplate.BuiltIns(ctx, nil)
+	if err != nil {
+		return err
+	}
+	custom, _, err := cl.IndexSetTemplate.Paginated(ctx)
 	if err != nil {
 		return err
 	}
 
+	seen := map[string]bool{}
 	var result []map[string]interface{}
-	for _, t := range templates {
+	appendTemplate := func(t map[string]interface{}) {
+		if id, ok := t["id"].(string); ok && id != "" {
+			if seen[id] {
+				return
+			}
+			seen[id] = true
+		}
 		result = append(result, map[string]interface{}{
 			"id":          t["id"],
 			"title":       t["title"],
@@ -66,8 +77,16 @@ func readList(d *schema.ResourceData, m interface{}) error {
 			"default":     t["default"],
 		})
 	}
+	for _, t := range builtIns {
+		appendTemplate(t)
+	}
+	for _, t := range custom {
+		appendTemplate(t)
+	}
 
-	_ = d.Set("templates", result)
-	d.SetId("builtins")
+	if err := d.Set("templates", result); err != nil {
+		return err
+	}
+	d.SetId("templates")
 	return nil
 }

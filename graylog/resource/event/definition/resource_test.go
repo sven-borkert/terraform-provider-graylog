@@ -50,6 +50,7 @@ func TestAccEventDefinition(t *testing.T) {
 			Path:         postURLPath,
 			PartOfHeader: testutil.Header(),
 			BodyJSONString: `{
+  "entity": {
   "title": "new-event-definition",
   "description": "",
   "priority": 1,
@@ -91,9 +92,15 @@ func TestAccEventDefinition(t *testing.T) {
       "notification_id": "5ea3c1d72ab79c00127567fe"
     }
   ]
+  },
+  "share_request": {"selected_grantee_capabilities": {}}
 }
 `,
 			Test: func(t *testing.T, req *http.Request, svc flute.Service, route flute.Route) {
+				// Graylog 7 enables (schedules) the definition unless schedule=false.
+				if got := req.URL.Query().Get("schedule"); got != "true" {
+					t.Errorf("expected schedule=true query param, got %q", got)
+				}
 				definitionBody = `{
   "id": "5ea3c8b42ab79c00127570c4",
   "title": "new-event-definition",

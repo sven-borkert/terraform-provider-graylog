@@ -30,6 +30,38 @@ func (cl Client) BuiltIns(ctx context.Context, warmTierEnabled *bool) ([]map[str
 	return body, resp, err
 }
 
+// Paginated lists all index set templates (including custom ones), accumulating
+// every page. The /built-in endpoint returns only built-in templates, so this is
+// needed to surface user-created templates.
+func (cl Client) Paginated(ctx context.Context) ([]map[string]interface{}, *http.Response, error) {
+	const perPage = 100
+	all := []map[string]interface{}{}
+	var lastResp *http.Response
+	for page := 1; ; page++ {
+		body := struct {
+			Elements []map[string]interface{} `json:"elements"`
+		}{}
+		query := url.Values{}
+		query.Set("page", strconv.Itoa(page))
+		query.Set("per_page", strconv.Itoa(perPage))
+		resp, err := cl.Client.Call(ctx, httpclient.CallParams{
+			Method:       "GET",
+			Path:         "/system/indices/index_sets/templates/paginated",
+			Query:        query,
+			ResponseBody: &body,
+		})
+		lastResp = resp
+		if err != nil {
+			return nil, resp, err
+		}
+		all = append(all, body.Elements...)
+		if len(body.Elements) < perPage {
+			break
+		}
+	}
+	return all, lastResp, nil
+}
+
 func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *http.Response, error) {
 	if id == "" {
 		return nil, nil, errors.New("id is required")

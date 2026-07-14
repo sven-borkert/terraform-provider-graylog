@@ -174,8 +174,8 @@ func update(d *schema.ResourceData, m interface{}) error {
 	// Update the view
 	_, _, err = cl.View.Update(ctx, d.Id(), viewData)
 	if err != nil {
-		// Clean up the new search if view update fails
-		_, _ = cl.ViewSearch.Delete(ctx, searchID)
+		// The orphaned search is reaped by the server's periodic cleanup job;
+		// Graylog 7 has no DELETE /views/search/{id} endpoint to remove it directly.
 		return fmt.Errorf("failed to update saved search view: %w", err)
 	}
 

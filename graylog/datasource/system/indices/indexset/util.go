@@ -9,7 +9,9 @@ import (
 
 func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) error {
 	id, ok := util.RenameKey(data, "id", "index_set_id")
-	if err := convert.DataToJSON(data, "rotation_strategy", "retention_strategy"); err != nil {
+	// Graylog 7 returns data_tiering and field_restrictions as JSON objects; encode
+	// them to strings for the TypeString schema attributes, like the resource read.
+	if err := convert.DataToJSON(data, "rotation_strategy", "retention_strategy", "data_tiering", "field_restrictions"); err != nil {
 		return err
 	}
 

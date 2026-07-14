@@ -14,23 +14,29 @@ func destroy(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	data, _, err := cl.Sidecar.GetAll(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get all sidecars to destroy: %w", err)
-	}
-	sidecars := data[keySidecars].([]interface{})
-	for i, sidecar := range sidecars {
-		nodeID := sidecar.(map[string]interface{})[keyNodeID].(string)
-		sidecars[i] = map[string]interface{}{
-			keyNodeID:      nodeID,
-			keyAssignments: []interface{}{},
+
+	// Clear assignments only for the sidecars this resource manages, not every
+	// sidecar registered on the server.
+	managed := d.Get(keySidecars).(*schema.Set).List()
+	nodes := make([]interface{}, 0, len(managed))
+	for _, s := range managed {
+		sm, ok := s.(map[string]interface{})
+		if !ok {
+			continue
 		}
+		nodes = append(nodes, map[string]interface{}{
+			keyNodeID:      sm[keyNodeID],
+			keyAssignments: []interface{}{},
+		})
+	}
+	if len(nodes) == 0 {
+		return nil
 	}
 
 	if _, err := cl.SidecarConfiguration.Assign(ctx, map[string]interface{}{
-		"nodes": sidecars,
+		keyNodes: nodes,
 	}); err != nil {
-		return fmt.Errorf("failed to delete congiuration assignments to sidecars: %w", err)
+		return fmt.Errorf("failed to remove configuration assignments from managed sidecars: %w", err)
 	}
 	return nil
 }
