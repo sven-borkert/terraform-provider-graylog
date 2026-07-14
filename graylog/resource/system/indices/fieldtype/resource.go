@@ -104,9 +104,15 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return nil
 	}
 
-	d.Set("index_set_id", indexSetID)
-	d.Set("field", field)
-	d.Set("type", ft.Type)
+	if err := d.Set("index_set_id", indexSetID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("field", field); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("type", ft.Type); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

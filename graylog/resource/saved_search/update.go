@@ -3,7 +3,6 @@ package saved_search
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -76,9 +75,10 @@ func update(d *schema.ResourceData, m interface{}) error {
 
 	// Convert sort order to API format (DESC/ASC)
 	sortOrder := d.Get("sort_order").(string)
-	if sortOrder == "Descending" {
+	switch sortOrder {
+	case "Descending":
 		sortOrder = "DESC"
-	} else if sortOrder == "Ascending" {
+	case "Ascending":
 		sortOrder = "ASC"
 	}
 
@@ -130,7 +130,6 @@ func update(d *schema.ResourceData, m interface{}) error {
 	if !ok || searchID == "" {
 		return fmt.Errorf("failed to get search ID from response")
 	}
-	log.Printf("[DEBUG] Created new search %s for saved search update", searchID)
 
 	// Build widget mapping
 	widgetMapping := map[string]interface{}{
@@ -186,6 +185,5 @@ func update(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	log.Printf("[DEBUG] Updated saved search %s with search %s", d.Id(), searchID)
 	return nil
 }

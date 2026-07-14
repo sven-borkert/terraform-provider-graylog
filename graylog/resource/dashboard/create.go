@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
@@ -65,7 +64,6 @@ func create(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("search creation failed: %w", err)
 	}
-	log.Printf("[DEBUG] Created search %s for dashboard with %d queries", searchID, len(queries))
 
 	// Update the dashboard data with the new search_id
 	data["search_id"] = searchID
@@ -89,6 +87,5 @@ func create(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(dID)
-	log.Printf("[DEBUG] Created dashboard %s with search %s", dID, searchID)
 	return util.ReadAfterCreate(d, m, dID, read)
 }

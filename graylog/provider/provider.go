@@ -35,8 +35,9 @@ func SchemaMap() map[string]*schema.Schema {
 			}, nil),
 		},
 		"auth_password": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:      schema.TypeString,
+			Required:  true,
+			Sensitive: true,
 			DefaultFunc: schema.MultiEnvDefaultFunc([]string{
 				"GRAYLOG_AUTH_PASSWORD",
 			}, nil),

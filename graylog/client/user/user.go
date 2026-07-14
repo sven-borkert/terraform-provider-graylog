@@ -44,16 +44,6 @@ func (cl Client) GetByID(
 	return body, resp, err
 }
 
-func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
-	body := map[string]interface{}{}
-	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
-		Method:       "GET",
-		Path:         "/users",
-		ResponseBody: &body,
-	})
-	return body, resp, err
-}
-
 func (cl Client) Create(ctx context.Context, user map[string]interface{}) (*http.Response, error) {
 	if user == nil {
 		return nil, errors.New("request body is nil")

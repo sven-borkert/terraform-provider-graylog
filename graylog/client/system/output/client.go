@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/suzuki-shunsuke/go-httpclient/httpclient"
 )
@@ -28,33 +26,13 @@ func (cl Client) Get(ctx context.Context, id string) (map[string]interface{}, *h
 	return body, resp, err
 }
 
-type GetAllParams struct {
-	Skip  int
-	Limit int
-	Stats bool
-}
-
-// Gets returns all outputs. Optional pagination and stats flags are supported via params.
-func (cl Client) Gets(ctx context.Context, params *GetAllParams) (map[string]interface{}, *http.Response, error) {
+// Gets returns all outputs. The GET /system/outputs endpoint takes no
+// pagination or stats parameters in Graylog 7.
+func (cl Client) Gets(ctx context.Context) (map[string]interface{}, *http.Response, error) {
 	body := map[string]interface{}{}
-
-	query := url.Values{}
-	if params != nil {
-		if params.Skip > 0 {
-			query.Set("skip", strconv.Itoa(params.Skip))
-		}
-		if params.Limit > 0 {
-			query.Set("limit", strconv.Itoa(params.Limit))
-		}
-		if params.Stats {
-			query.Set("stats", "true")
-		}
-	}
-
 	resp, err := cl.Client.Call(ctx, httpclient.CallParams{
 		Method:       "GET",
 		Path:         "/system/outputs",
-		Query:        query,
 		ResponseBody: &body,
 	})
 	return body, resp, err

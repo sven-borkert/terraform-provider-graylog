@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -75,9 +74,10 @@ func create(d *schema.ResourceData, m interface{}) error {
 
 	// Convert sort order to API format (DESC/ASC)
 	sortOrder := d.Get("sort_order").(string)
-	if sortOrder == "Descending" {
+	switch sortOrder {
+	case "Descending":
 		sortOrder = "DESC"
-	} else if sortOrder == "Ascending" {
+	case "Ascending":
 		sortOrder = "ASC"
 	}
 
@@ -129,7 +129,6 @@ func create(d *schema.ResourceData, m interface{}) error {
 	if !ok || searchID == "" {
 		return errors.New("failed to get search ID from response")
 	}
-	log.Printf("[DEBUG] Created search %s for saved search", searchID)
 
 	// Build widget mapping
 	widgetMapping := map[string]interface{}{
@@ -180,7 +179,10 @@ func create(d *schema.ResourceData, m interface{}) error {
 
 	viewID, ok := viewResp["id"].(string)
 	if !ok || viewID == "" {
-		return errors.New("failed to get view ID from response")
+		// The view was created but its ID is unusable, so it cannot be tracked in
+		// state. Graylog 7 has no DELETE /views/search/{id} endpoint to roll back the
+		// search; both the search and view are reaped by the server's cleanup job.
+		return errors.New("saved search view created but response contained no usable id")
 	}
 
 	d.SetId(viewID)
@@ -191,6 +193,5 @@ func create(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	log.Printf("[DEBUG] Created saved search %s with search %s", viewID, searchID)
 	return util.ReadAfterCreate(d, m, viewID, read)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sven-borkert/terraform-provider-graylog/graylog/client"
@@ -63,7 +62,6 @@ func update(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("search creation failed: %w", err)
 	}
-	log.Printf("[DEBUG] Created search %s for dashboard update with %d queries", searchID, len(queries))
 
 	// Update the dashboard data with the new search_id
 	data["search_id"] = searchID
@@ -74,6 +72,5 @@ func update(d *schema.ResourceData, m interface{}) error {
 	if _, _, err := cl.View.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a dashboard %s: %w", d.Id(), err)
 	}
-	log.Printf("[DEBUG] Updated dashboard %s with search %s", d.Id(), searchID)
 	return nil
 }

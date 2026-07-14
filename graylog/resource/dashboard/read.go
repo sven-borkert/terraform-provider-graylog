@@ -10,7 +10,6 @@ import (
 )
 
 func read(d *schema.ResourceData, m interface{}) error {
-	// log.Printf("dashboard read id=%s", d.Id())
 	ctx := context.Background()
 	cl, err := client.New(m)
 	if err != nil {

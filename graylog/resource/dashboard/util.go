@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/google/uuid"
@@ -156,8 +155,10 @@ func ensureTitlesMap(state map[string]interface{}) map[string]interface{} {
 }
 
 func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) error {
-	log.Printf("dashboard flatten input state type %T", data[keyState])
-	stateMap := data[keyState].(map[string]interface{})
+	stateMap, ok := data[keyState].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("dashboard state has unexpected type %T", data[keyState])
+	}
 
 	if len(stateMap) == 0 {
 		return errors.New("dashboard state is empty")
@@ -172,7 +173,10 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 		if !ok {
 			continue
 		}
-		state := sv.(map[string]interface{})
+		state, ok := sv.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("dashboard state %q has unexpected type %T", stateID, sv)
+		}
 
 		cleanState, err := flattenState(stateID, state)
 		if err != nil {
@@ -259,9 +263,15 @@ func getStateIDOrder(d *schema.ResourceData, stateMap map[string]interface{}) []
 
 // flattenState converts a single API state entry to Terraform-compatible format.
 func flattenState(stateID string, state map[string]interface{}) (map[string]interface{}, error) {
-	widgets := state[keyWidgets].([]interface{})
+	widgets, ok := state[keyWidgets].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("dashboard state %q has widgets of unexpected type %T", stateID, state[keyWidgets])
+	}
 	for i, a := range widgets {
-		widget := a.(map[string]interface{})
+		widget, ok := a.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("dashboard widget has unexpected type %T", a)
+		}
 		if id, ok := widget["id"]; ok {
 			widget[keyWidgetID] = id
 		}

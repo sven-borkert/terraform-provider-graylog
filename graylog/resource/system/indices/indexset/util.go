@@ -63,12 +63,8 @@ func getDataFromResourceData(d *schema.ResourceData) (map[string]interface{}, er
 	if v, ok := data["field_type_profile"].(string); ok && v == "" {
 		delete(data, "field_type_profile")
 	}
-	if v, ok := data["index_template_type"].(string); ok && v == "" {
-		data["index_template_type"] = "default"
-	}
-	if _, ok := data["index_template_type"]; ok {
-		delete(data, "index_template_type")
-	}
+	// index_template_type is derived server-side, never sent.
+	delete(data, "index_template_type")
 	if v, ok := data["index_set_template_id"].(string); ok && v == "" {
 		delete(data, "index_set_template_id")
 	}

@@ -39,7 +39,7 @@ func readFromID(ctx context.Context, d *schema.ResourceData, cl client.Client, i
 }
 
 func readFromTitle(ctx context.Context, d *schema.ResourceData, cl client.Client, title string) error {
-	outputs, _, err := cl.Output.Gets(ctx, nil)
+	outputs, _, err := cl.Output.Gets(ctx)
 	if err != nil {
 		return err
 	}

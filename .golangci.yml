@@ -7,4 +7,14 @@ linters:
   - errcheck
   - govet
   - ineffassign
+  - staticcheck
   - unused
+  exclusions:
+    rules:
+    # The provider still registers resources/data sources with the deprecated
+    # non-context SDKv2 CRUD fields (Create/Read/Update/Delete). Migrating all of
+    # them to the Context variants is tracked separately; silence the deprecation
+    # warning until then.
+    - linters:
+      - staticcheck
+      text: "SA1019"
