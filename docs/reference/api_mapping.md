@@ -363,14 +363,19 @@ delete(data, "last_modified")
 
 **Impact:** ✅ NONE - Provider doesn't use these endpoints
 
-### 6.3 Deprecated Resources (Functional but Obsolete)
+### 6.3 Removed Resources (No Longer Supported in Graylog 7)
 
-| Resource | Status | Replacement | Action |
-|----------|--------|-------------|--------|
-| `graylog_alarm_callback` | ⚠️ DEPRECATED (since Graylog 3.0) | Event Notifications | Mark as deprecated in docs |
-| `graylog_alert_condition` | ⚠️ DEPRECATED (since Graylog 3.0) | Event Definitions | Mark as deprecated in docs |
+The following legacy resources were removed from the provider because their underlying Graylog 7 REST APIs no longer exist:
 
-**Note:** These resources still work but are legacy. Graylog 3.0+ recommends using the Events System instead.
+| Resource | Replacement |
+|----------|-------------|
+| `graylog_alarm_callback` | `graylog_event_notification` |
+| `graylog_alert_condition` | `graylog_event_definition` |
+| `graylog_dashboard_widget` | Managed inline via the `graylog_dashboard` `state` block |
+| `graylog_dashboard_widget_positions` | Managed inline via the `graylog_dashboard` `state` block |
+| `graylog_ldap_setting` | Authentication-services API |
+
+**Note:** These resources (and the `graylog_dashboard_widget` data source) were removed in Graylog 7. Use the Events System for alerting and manage dashboard widgets inline through `graylog_dashboard`.
 
 ---
 
@@ -406,14 +411,9 @@ delete(data, "last_modified")
 |----------|--------|
 | `graylog_stream_rule` | No entity creation, just rules |
 | `graylog_stream_output` | Association endpoint, not entity creation |
-| `graylog_alarm_callback` | Nested resource under stream |
-| `graylog_alert_condition` | Nested resource under stream |
-| `graylog_dashboard_widget` | Nested resource under dashboard |
-| `graylog_dashboard_widget_positions` | Update-only endpoint |
 | `graylog_extractor` | Nested resource under input |
 | `graylog_input_static_fields` | Association endpoint |
 | `graylog_pipeline_connection` | Connection management |
-| `graylog_ldap_setting` | Update-focused endpoint |
 | `graylog_sidecars` | Read/Update only, no create |
 
 ### 7.4 ALL Data Sources

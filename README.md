@@ -56,14 +56,16 @@ The provider has been fully updated to support Graylog 7.0's breaking API change
 - ✅ **Unknown properties validation** - Computed fields are automatically removed from update requests
 - ✅ **Backward compatible** - Existing Terraform configurations work without changes
 
-### Supported Resources (25)
+### Supported Resources (23)
 
 **Streams & Alerting:**
 - `graylog_stream` - Stream management
 - `graylog_stream_rule` - Stream routing rules
 - `graylog_stream_output` - Stream output associations
-- `graylog_alarm_callback` - Legacy alarm callbacks (deprecated)
-- `graylog_alert_condition` - Legacy alert conditions (deprecated)
+
+> Legacy `graylog_alarm_callback` and `graylog_alert_condition` were removed: the underlying
+> Graylog alerting API no longer exists in Graylog 7. Use `graylog_event_definition` and
+> `graylog_event_notification` instead.
 
 **Events System:**
 - `graylog_event_definition` - Modern event definitions
@@ -81,14 +83,16 @@ The provider has been fully updated to support Graylog 7.0's breaking API change
 - `graylog_pipeline_connection` - Pipeline to stream connections
 
 **Dashboards:**
-- `graylog_dashboard` - Dashboard management
-- `graylog_dashboard_widget` - Dashboard widgets
-- `graylog_dashboard_widget_positions` - Widget layout
+- `graylog_dashboard` - Dashboard management (widgets and layout are managed inline via the
+  dashboard's `state`; the legacy `graylog_dashboard_widget`/`_positions` resources were removed
+  because their Graylog API no longer exists in Graylog 7)
 
 **System:**
 - `graylog_index_set` - Index set configuration
 - `graylog_output` - Output destinations
-- `graylog_ldap_setting` - LDAP authentication
+
+> Legacy `graylog_ldap_setting` was removed: the `/system/ldap/settings` API no longer exists in
+> Graylog 7 (replaced by the authentication-services API).
 
 **Security:**
 - `graylog_user` - User management

@@ -63,11 +63,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed index set updates failing due to read-only fields
 - Fixed all resource updates to handle Graylog 7.0's strict property validation
 
-### Deprecated
+### Removed
+The following resources/data sources were removed because their Graylog REST APIs no longer exist in Graylog 7:
 - `graylog_alarm_callback` - Use `graylog_event_notification` instead (Event System)
 - `graylog_alert_condition` - Use `graylog_event_definition` instead (Event System)
-
-**Note:** Deprecated resources still work but are marked for future removal. Graylog recommends using the Events System for alerting.
+- `graylog_dashboard_widget` (resource and data source) and `graylog_dashboard_widget_positions` - Widgets and layout are now managed inline via the `graylog_dashboard` resource's `state`
+- `graylog_ldap_setting` - The `/system/ldap/settings` API was removed; use the authentication-services API
 
 ## Migration Notes
 

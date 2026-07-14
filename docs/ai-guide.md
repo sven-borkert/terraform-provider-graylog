@@ -1,6 +1,6 @@
 # Graylog Terraform Provider - AI Agent Guide
 
-Comprehensive reference for configuring Graylog 7.0+ with the `sven-borkert/graylog` Terraform provider. Covers provider setup, all 27 resources, 17 data sources, and common workflows.
+Comprehensive reference for configuring Graylog 7.0+ with the `sven-borkert/graylog` Terraform provider. Covers provider setup, all 22 resources, 16 data sources, and common workflows.
 
 ## Provider Setup
 
@@ -84,7 +84,6 @@ Create resources in this order to satisfy dependencies:
 20. graylog_sidecar_configuration (depends on: sidecar_collector)
 21. graylog_sidecars             (depends on: sidecar_collector, sidecar_configuration)
 22. graylog_extractor            (depends on: input)
-23. graylog_ldap_setting         (standalone)
 ```
 
 ---
@@ -940,128 +939,6 @@ Import: `terraform import graylog_extractor.example <input_id>/<extractor_id>`
 
 ---
 
-### graylog_alarm_callback
-
-Manages legacy alarm callbacks on streams.
-
-```hcl
-resource "graylog_alarm_callback" "email_callback" {
-  stream_id = graylog_stream.app_stream.id
-  type      = "org.graylog2.alarmcallbacks.EmailAlarmCallback"
-  title     = "Email Alarm"
-  configuration = jsonencode({
-    sender  = "graylog@example.com"
-    subject = "Graylog alert for stream: $${stream.title}"
-    body    = "Alert condition hit.\n\nStream: $${stream.title}"
-    user_receivers  = ["admin"]
-    email_receivers = ["ops@example.com"]
-  })
-}
-```
-
-| Argument | Required | Type | Description |
-|----------|----------|------|-------------|
-| `stream_id` | Yes (ForceNew) | string | Stream ID |
-| `type` | Yes | string | Alarm callback type class |
-| `title` | Yes | string | Title |
-| `configuration` | Yes | JSON string | Configuration (must be a JSON object) |
-
-Computed: `alarmcallback_id`.
-
-Import: `terraform import graylog_alarm_callback.example <stream_id>/<alarm_callback_id>`
-
----
-
-### graylog_alert_condition
-
-Manages legacy alert conditions on streams.
-
-```hcl
-resource "graylog_alert_condition" "message_count" {
-  stream_id = graylog_stream.app_stream.id
-  type      = "message_count"
-  title     = "High Message Count"
-  parameters = jsonencode({
-    grace             = 5
-    threshold         = 1000
-    threshold_type    = "MORE"
-    backlog           = 5
-    time              = 5
-    repeat_notifications = false
-  })
-}
-```
-
-| Argument | Required | Type | Description |
-|----------|----------|------|-------------|
-| `stream_id` | Yes (ForceNew) | string | Stream ID |
-| `type` | Yes | string | Condition type |
-| `title` | Yes | string | Title |
-| `parameters` | Yes | JSON string | Parameters (must be a JSON object) |
-| `in_grace` | No | bool | Whether condition is in grace period |
-
-Computed: `alert_condition_id`.
-
-Alert condition types: `message_count`, `field_value`, `field_content_value`.
-
-Import: `terraform import graylog_alert_condition.example <stream_id>/<alert_condition_id>`
-
----
-
-### graylog_dashboard_widget
-
-Manages individual legacy dashboard widgets (pre-Graylog 7 style).
-
-```hcl
-resource "graylog_dashboard_widget" "search_result" {
-  dashboard_id = graylog_dashboard.overview.id
-  type         = "SEARCH_RESULT_COUNT"
-  description  = "Total Messages"
-  config = jsonencode({
-    timerange = { type = "relative", range = 300 }
-    query     = "*"
-  })
-  cache_time = 10
-}
-```
-
-| Argument | Required | Type | Description |
-|----------|----------|------|-------------|
-| `dashboard_id` | Yes (ForceNew) | string | Dashboard ID |
-| `type` | Yes | string | Widget type |
-| `description` | Yes | string | Widget description |
-| `config` | Yes | JSON string | Widget configuration |
-| `cache_time` | No | int | Cache time in seconds |
-
-Computed: `widget_id`, `creator_user_id`.
-
-Import: `terraform import graylog_dashboard_widget.example <dashboard_id>/<widget_id>`
-
----
-
-### graylog_dashboard_widget_positions
-
-Manages widget positions on a legacy dashboard.
-
-```hcl
-resource "graylog_dashboard_widget_positions" "positions" {
-  dashboard_id = graylog_dashboard.overview.id
-  positions = jsonencode({
-    widget_id_1 = { col = 1, row = 1, width = 2, height = 2 }
-    widget_id_2 = { col = 3, row = 1, width = 2, height = 2 }
-  })
-}
-```
-
-| Argument | Required | Type | Description |
-|----------|----------|------|-------------|
-| `dashboard_id` | Yes (ForceNew) | string | Dashboard ID |
-| `positions` | Yes | JSON string | Map of widget IDs to position objects (must be a JSON object) |
-
-Import: `terraform import graylog_dashboard_widget_positions.example <dashboard_id>`
-
----
-
 ### graylog_sidecar_collector
 
 Manages sidecar collector definitions.
@@ -1161,55 +1038,7 @@ Import: `terraform import graylog_sidecars.example <any_id>` (resource uses a fi
 
 ---
 
-### graylog_ldap_setting
-
-Manages LDAP/Active Directory authentication settings.
-
-```hcl
-resource "graylog_ldap_setting" "main" {
-  enabled                = true
-  system_username        = "cn=admin,dc=example,dc=com"
-  system_password        = "ldap-password"
-  ldap_uri               = "ldap://ldap.example.com:389"
-  use_start_tls          = true
-  trust_all_certificates = false
-  active_directory        = false
-  search_base            = "ou=users,dc=example,dc=com"
-  search_pattern         = "(uid={0})"
-  display_name_attribute = "cn"
-  default_group          = "Reader"
-  group_search_base      = "ou=groups,dc=example,dc=com"
-  group_id_attribute     = "cn"
-  group_search_pattern   = "(member={0})"
-  group_mapping = {
-    "graylog-admins" = "Admin"
-    "graylog-users"  = "Reader"
-  }
-}
-```
-
-| Argument | Required | Type | Description |
-|----------|----------|------|-------------|
-| `system_username` | Yes | string | LDAP bind DN |
-| `ldap_uri` | Yes | string | LDAP URI |
-| `search_base` | Yes | string | User search base DN |
-| `search_pattern` | Yes | string | User search pattern (`{0}` = username) |
-| `display_name_attribute` | Yes | string | LDAP attribute for display name |
-| `default_group` | Yes | string | Default Graylog role for LDAP users |
-| `system_password` | No (Sensitive) | string | LDAP bind password |
-| `enabled` | No | bool | Enable LDAP auth |
-| `use_start_tls` | No | bool | Use STARTTLS |
-| `trust_all_certificates` | No | bool | Trust all TLS certs |
-| `active_directory` | No | bool | Use Active Directory mode |
-| `group_search_base` | No | string | Group search base DN |
-| `group_id_attribute` | No | string | Group name attribute |
-| `group_search_pattern` | No | string | Group search pattern |
-| `group_mapping` | No | map(string) | LDAP group to Graylog role mapping |
-| `additional_default_groups` | No | set(string) | Additional default groups |
-
-Computed: `system_password_set`.
-
-Import: `terraform import graylog_ldap_setting.example <any_id>`
+> **Removed in Graylog 7:** The legacy resources `graylog_alarm_callback` (use `graylog_event_notification` instead), `graylog_alert_condition` (use `graylog_event_definition` instead), `graylog_dashboard_widget` and `graylog_dashboard_widget_positions` (widgets are now managed inline through the `graylog_dashboard` `state` block), and `graylog_ldap_setting` (use the authentication-services API instead) were removed because their Graylog 7 REST APIs no longer exist.
 
 ---
 
@@ -1235,26 +1064,6 @@ data "graylog_dashboard" "by_id" {
 | `title` | string | Dashboard title (conflicts with `dashboard_id`) |
 
 Attributes: `description`, `summary`, `owner`, `search_id`, `created_at`.
-
----
-
-### graylog_dashboard_widget
-
-Look up a specific widget within a dashboard.
-
-```hcl
-data "graylog_dashboard_widget" "widget" {
-  dashboard_id = "abc123"
-  widget_id    = "def456"
-}
-```
-
-| Argument | Type | Description |
-|----------|------|-------------|
-| `dashboard_id` | string (Required) | Dashboard ID |
-| `widget_id` | string (Required) | Widget ID |
-
-Attributes: `type`, `description`, `config`, `cache_time`, `creator_user_id`.
 
 ---
 
@@ -1710,13 +1519,8 @@ resource "graylog_user" "ops" {
 | `graylog_role` | `terraform import graylog_role.name <role_name>` |
 | `graylog_user` | `terraform import graylog_user.name <username>` |
 | `graylog_dashboard` | `terraform import graylog_dashboard.name <id>` |
-| `graylog_dashboard_widget` | `terraform import graylog_dashboard_widget.name <dashboard_id>/<widget_id>` |
-| `graylog_dashboard_widget_positions` | `terraform import graylog_dashboard_widget_positions.name <dashboard_id>` |
 | `graylog_saved_search` | `terraform import graylog_saved_search.name <id>` |
 | `graylog_sidecar_collector` | `terraform import graylog_sidecar_collector.name <id>` |
 | `graylog_sidecar_configuration` | `terraform import graylog_sidecar_configuration.name <id>` |
 | `graylog_sidecars` | `terraform import graylog_sidecars.name <any_id>` |
 | `graylog_extractor` | `terraform import graylog_extractor.name <input_id>/<extractor_id>` |
-| `graylog_alarm_callback` | `terraform import graylog_alarm_callback.name <stream_id>/<alarm_callback_id>` |
-| `graylog_alert_condition` | `terraform import graylog_alert_condition.name <stream_id>/<alert_condition_id>` |
-| `graylog_ldap_setting` | `terraform import graylog_ldap_setting.name <any_id>` |

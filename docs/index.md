@@ -184,18 +184,14 @@ See the [Changelog](changelog) for migration notes when upgrading from earlier v
 ### Alerting & Events
 - **[graylog_event_definition](resources/event_definition)** - Define event conditions
 - **[graylog_event_notification](resources/event_notification)** - Configure notifications
-- **[graylog_alert_condition](resources/alert_condition)** - Legacy alert conditions (deprecated)
-- **[graylog_alarm_callback](resources/alarm_callback)** - Legacy alarm callbacks (deprecated)
 
 ### Visualization
-- **[graylog_dashboard](resources/dashboard)** - Create dashboards
-- **[graylog_dashboard_widget](resources/dashboard_widget)** - Add widgets to dashboards
-- **[graylog_dashboard_widget_positions](resources/dashboard_widget_positions)** - Manage widget layouts
+- **[graylog_dashboard](resources/dashboard)** - Create dashboards (widgets and layout are managed
+  inline via the dashboard's `state`)
 
 ### Access Control
 - **[graylog_user](resources/user)** - Manage users
 - **[graylog_role](resources/role)** - Define roles and permissions
-- **[graylog_ldap_setting](resources/ldap_setting)** - Configure LDAP authentication
 
 ### Sidecar Management
 - **[graylog_sidecar_configuration](resources/sidecar_configuration)** - Configure sidecar collectors
