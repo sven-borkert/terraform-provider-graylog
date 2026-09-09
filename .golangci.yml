@@ -9,6 +9,15 @@ linters:
   - ineffassign
   - staticcheck
   - unused
+  settings:
+    govet:
+      # The `inline` analyzer is a refactoring aid, not a correctness check: it
+      # reports call sites it could not rewrite because the callee's stdlib is
+      # newer than the `go` directive in go.mod. That is a property of the
+      # toolchain the linter was built with, not of this code, so the findings
+      # move whenever the linter is rebuilt. `go vet ./...` stays clean.
+      disable:
+      - inline
   exclusions:
     rules:
     # The provider still registers resources/data sources with the deprecated
