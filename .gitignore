@@ -9,7 +9,6 @@ dist
 terraform-provider-graylog
 .sshenv
 .venv/
-.mcp/
 examples/graylog7-e2e/graylog.auto.tfvars
 examples/graylog7-e2e/*.json
 example-local-usage
@@ -18,3 +17,5 @@ docs/api-docs
 .terraformrc-dev
 .terraform.lock.hcl
 .DS_Store
+__pycache__/
+*.pyc

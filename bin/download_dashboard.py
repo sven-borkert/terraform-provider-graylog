@@ -3,10 +3,12 @@
 Download a Graylog dashboard via API and save it as JSON.
 Usage: python download_dashboard.py [dashboard_id] [output_file]
 
-If no arguments provided, downloads the PacketBeat dashboard.
+Reads GRAYLOG_URL, GRAYLOG_USER, GRAYLOG_PASSWORD from the environment.
+If no dashboard id is given, GRAYLOG_DASHBOARD_ID is used.
 """
 
 import json
+import os
 import sys
 import requests
 from datetime import datetime
@@ -15,13 +17,12 @@ from urllib3.exceptions import InsecureRequestWarning
 # Suppress SSL warnings for self-signed certs
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-# Configuration
-GRAYLOG_URL = "https://graylog.example.com/api"
-USERNAME = "admin"
-PASSWORD = "***REMOVED***"
+# Configuration (via environment)
+GRAYLOG_URL = os.environ.get("GRAYLOG_URL", "https://graylog.example.com/api")
+USERNAME = os.environ.get("GRAYLOG_USER", "admin")
+PASSWORD = os.environ.get("GRAYLOG_PASSWORD", "")
 
-# PacketBeat dashboard ID (from terraform output)
-DEFAULT_DASHBOARD_ID = "6928b7ca524162443155b69b"
+DEFAULT_DASHBOARD_ID = os.environ.get("GRAYLOG_DASHBOARD_ID", "")
 
 
 def get_dashboard(dashboard_id: str) -> dict:
@@ -59,6 +60,10 @@ def save_dashboard(data: dict, filename: str):
 
 def main():
     dashboard_id = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DASHBOARD_ID
+    if not dashboard_id:
+        sys.exit("No dashboard id given and GRAYLOG_DASHBOARD_ID is not set")
+    if not PASSWORD:
+        sys.exit("GRAYLOG_PASSWORD is not set")
 
     # Generate filename with timestamp if not provided
     if len(sys.argv) > 2:
