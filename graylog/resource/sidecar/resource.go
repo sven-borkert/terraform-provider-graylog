@@ -12,10 +12,15 @@ func Resource() *schema.Resource {
 		Delete: destroy,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: importState,
 		},
 
 		Schema: map[string]*schema.Schema{
+			"assignment_scope_version": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Tracks whether assignment ownership was established by this provider version.",
+			},
 			"sidecars": {
 				Type:     schema.TypeSet,
 				Required: true,

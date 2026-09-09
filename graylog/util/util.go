@@ -100,50 +100,6 @@ func SchemaDiffSuppressJSONSubset(k, oldV, newV string, d *schema.ResourceData) 
 	return jsonIsSubset(newData, oldData)
 }
 
-// graylogPasswordMask is the placeholder Graylog returns in place of password
-// input attributes (AbstractInputsResource.maskPasswordsInConfiguration).
-const graylogPasswordMask = "<password set>"
-
-// SchemaDiffSuppressJSONMaskedSecret suppresses diffs on a JSON attributes blob
-// when the only differences are fields the server masked as "<password set>".
-// Inputs with secret configuration otherwise show a perpetual diff because the
-// read-back value never matches the configured secret. Because the real secret is
-// never returned, a change to only a masked field cannot be detected here; recreate
-// the resource (or change another attribute) to rotate such secrets.
-func SchemaDiffSuppressJSONMaskedSecret(k, oldV, newV string, d *schema.ResourceData) bool {
-	if b, err := dataeq.JSON.Equal([]byte(oldV), []byte(newV)); err == nil && b {
-		return true
-	}
-
-	var oldData, newData map[string]interface{}
-	if err := json.Unmarshal([]byte(oldV), &oldData); err != nil {
-		return false
-	}
-	if err := json.Unmarshal([]byte(newV), &newData); err != nil {
-		return false
-	}
-	if len(oldData) != len(newData) {
-		return false
-	}
-
-	for key, nv := range newData {
-		ov, ok := oldData[key]
-		if !ok {
-			return false
-		}
-		if s, isStr := ov.(string); isStr && s == graylogPasswordMask {
-			// Masked secret in state; cannot compare, treat as unchanged.
-			continue
-		}
-		ob, _ := json.Marshal(ov)
-		nb, _ := json.Marshal(nv)
-		if string(ob) != string(nb) {
-			return false
-		}
-	}
-	return true
-}
-
 // jsonIsSubset checks if 'subset' is contained within 'superset'.
 // For maps: all keys in subset must exist in superset with matching values.
 // For slices: must have same length with each element matching.

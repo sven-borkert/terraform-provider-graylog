@@ -10,6 +10,9 @@ import (
 )
 
 func update(d *schema.ResourceData, m interface{}) error {
+	if old, newValue := d.GetChange(keyDefault); old == true && newValue == false {
+		return fmt.Errorf("cannot unset the default index set: select another index set as default first")
+	}
 	ctx := context.Background()
 	cl, err := client.New(m)
 	if err != nil {
@@ -31,6 +34,11 @@ func update(d *schema.ResourceData, m interface{}) error {
 
 	if _, _, err := cl.IndexSet.Update(ctx, d.Id(), data); err != nil {
 		return fmt.Errorf("failed to update a index set %s: %w", d.Id(), err)
+	}
+	if d.Get(keyDefault).(bool) {
+		if _, err := cl.IndexSet.SetDefault(ctx, d.Id()); err != nil {
+			return fmt.Errorf("failed to select index set %s as default: %w", d.Id(), err)
+		}
 	}
 	return nil
 }

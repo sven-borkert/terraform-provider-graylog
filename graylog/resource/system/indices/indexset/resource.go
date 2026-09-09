@@ -91,8 +91,10 @@ func Resource() *schema.Resource {
 				Default:  true,
 			},
 			"default": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Select this index set as the server default. To unset it, first select another index set as default.",
 			},
 			"can_be_default": {
 				Type:     schema.TypeBool,

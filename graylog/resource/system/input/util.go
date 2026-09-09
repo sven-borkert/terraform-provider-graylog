@@ -45,6 +45,21 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 	if attrVal == nil {
 		attrVal = map[string]interface{}{}
 	}
+	// Graylog masks password attributes on read. Preserve the last applied
+	// value so an unchanged secret stays stable and a new value still plans
+	// an update. Imports have no prior secret and retain the server mask.
+	var prior map[string]interface{}
+	if err := json.Unmarshal([]byte(d.Get(keyAttributes).(string)), &prior); err == nil {
+		if attrs, ok := attrVal.(map[string]interface{}); ok {
+			for key, value := range attrs {
+				if value == "<password set>" {
+					if secret, exists := prior[key]; exists {
+						attrs[key] = secret
+					}
+				}
+			}
+		}
+	}
 	data[keyAttributes] = attrVal
 	delete(data, "configuration")
 

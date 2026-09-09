@@ -106,6 +106,18 @@ func (cl Client) Update(
 	return body, resp, err
 }
 
+// SetDefault selects the server-wide default; the regular update endpoint
+// does not accept the default flag.
+func (cl Client) SetDefault(ctx context.Context, id string) (*http.Response, error) {
+	if id == "" {
+		return nil, errors.New("id is required")
+	}
+	return cl.Client.Call(ctx, httpclient.CallParams{
+		Method: "PUT",
+		Path:   "/system/indices/index_sets/" + id + "/default",
+	})
+}
+
 func (cl Client) Delete(ctx context.Context, id string) (*http.Response, error) {
 	if id == "" {
 		return nil, errors.New("id is required")

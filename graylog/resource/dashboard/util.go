@@ -182,6 +182,7 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 		if err != nil {
 			return err
 		}
+		preserveWidgetOrder(d, stateID, cleanState[keyWidgets].([]interface{}))
 		statesList = append(statesList, cleanState)
 	}
 
@@ -211,6 +212,32 @@ func setDataToResourceData(d *schema.ResourceData, data map[string]interface{}) 
 
 	d.SetId(dID)
 	return nil
+}
+
+// Preserve Terraform's list order even though Graylog stores widgets in a set.
+// flattenState already sorts new/imported widgets, which remain at the end.
+func preserveWidgetOrder(d *schema.ResourceData, stateID string, widgets []interface{}) {
+	ranks := make(map[string]int)
+	for _, value := range d.Get(keyState).([]interface{}) {
+		state := value.(map[string]interface{})
+		if id, _ := state[keyID].(string); id != stateID && id != "" {
+			continue
+		}
+		for _, value := range state[keyWidgets].([]interface{}) {
+			widget := value.(map[string]interface{})
+			if id, _ := widget[keyWidgetID].(string); id != "" {
+				ranks[id] = len(ranks)
+			}
+		}
+	}
+	sort.SliceStable(widgets, func(i, j int) bool {
+		a, aKnown := ranks[widgets[i].(map[string]interface{})[keyWidgetID].(string)]
+		b, bKnown := ranks[widgets[j].(map[string]interface{})[keyWidgetID].(string)]
+		if aKnown != bKnown {
+			return aKnown
+		}
+		return aKnown && a < b
+	})
 }
 
 // getStateIDOrder returns state IDs in a stable order.

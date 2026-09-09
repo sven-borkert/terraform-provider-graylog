@@ -9,6 +9,9 @@ import (
 )
 
 func destroy(d *schema.ResourceData, m interface{}) error {
+	if err := validateAssignmentScope(d); err != nil {
+		return err
+	}
 	ctx := context.Background()
 	cl, err := client.New(m)
 	if err != nil {

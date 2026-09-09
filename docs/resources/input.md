@@ -7,7 +7,7 @@
 
 * `title` - (Required) the title of the Input. The data type is `string`.
 * `type` - (Required) the type of the Input. The data type is `string`.
-* `attributes` - (Required) the attributes of the Input. The data type is `JSON string`.
+* `attributes` - (Required, Sensitive) the attributes of the Input. The data type is `JSON string`. Configured passwords are retained in Terraform state when Graylog masks them on read, so changing a password triggers an update. After import, supply the actual passwords in configuration; Graylog cannot return them.
 * `global` - (Optional) The data type is `bool`. The default value is `false`.
 * `node` - (Optional) The data type is `string`.
 

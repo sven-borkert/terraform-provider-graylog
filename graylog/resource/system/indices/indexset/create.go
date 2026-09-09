@@ -43,6 +43,11 @@ func create(d *schema.ResourceData, m interface{}) error {
 	if err := cl.IndexSet.WaitForDeflector(ctx, id, deflectorTimeout, deflectorPollInterval); err != nil {
 		return fmt.Errorf("index set created but deflector not ready: %w", err)
 	}
+	if d.Get(keyDefault).(bool) {
+		if _, err := cl.IndexSet.SetDefault(ctx, id); err != nil {
+			return fmt.Errorf("failed to select index set %s as default: %w", id, err)
+		}
+	}
 
 	return util.ReadAfterCreate(d, m, id, read)
 }

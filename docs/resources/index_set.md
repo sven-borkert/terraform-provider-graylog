@@ -66,7 +66,7 @@ resource "graylog_index_set" "application_logs" {
 * `replicas` - (Optional) Number of replicas. Default: 0.
 * `index_optimization_disabled` - (Optional) Whether to disable index optimization. Default: false.
 * `index_optimization_max_num_segments` - (Required) Maximum number of segments after optimization.
-* `default` - (Optional) Whether this is the default index set. Default: false.
+* `default` - (Optional, Computed) Set to `true` to select this as the server-wide default index set. When omitted, Terraform reads the server value. Before setting this to `false` or deleting the default index set, select another index set as default and refresh state. Graylog cannot have no default index set.
 * `field_type_refresh_interval` - (Optional) Field type refresh interval in milliseconds.
 * `writable` - (Optional) Whether the index set is writable. Default: true.
 * `use_legacy_rotation` - (Optional) Use legacy rotation. Default: false for Graylog 7.

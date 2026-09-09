@@ -32,7 +32,8 @@ func Resource() *schema.Resource {
 			"attributes": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: util.SchemaDiffSuppressJSONMaskedSecret,
+				Sensitive:        true,
+				DiffSuppressFunc: util.SchemaDiffSuppressJSONString,
 				ValidateFunc:     util.ValidateIsJSON,
 			},
 

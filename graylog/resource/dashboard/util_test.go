@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/stretchr/testify/require"
 )
 
 // Regression test: ensure we can flatten a ViewDTO state map returned by the Views API.
@@ -45,5 +46,32 @@ func TestSetDataToResourceDataFlattensPositions(t *testing.T) {
 	widget := state["widgets"].([]interface{})[0].(map[string]interface{})
 	if _, ok := widget["timerange"].(string); !ok {
 		t.Fatalf("timerange should be JSON string, got %T", widget["timerange"])
+	}
+}
+
+func TestRefreshPreservesWidgetOrder(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		prior, want []string
+	}{
+		{"configured order", []string{"z", "a"}, []string{"z", "a", "b"}},
+		{"removed widget", []string{"gone", "z", "a"}, []string{"z", "a", "b"}},
+		{"import", nil, []string{"a", "b", "z"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var widgets []interface{}
+			for _, id := range tc.prior {
+				widgets = append(widgets, map[string]interface{}{"widget_id": id, "type": "messages", "config": "{}"})
+			}
+			d := schema.TestResourceDataRaw(t, Resource().Schema, map[string]interface{}{"state": []interface{}{map[string]interface{}{"id": "tab", "widgets": widgets}}})
+			var data map[string]interface{}
+			require.NoError(t, json.Unmarshal([]byte(`{"id":"view","state":{"tab":{"widgets":[{"id":"b","type":"messages","config":{}},{"id":"a","type":"messages","config":{}},{"id":"z","type":"messages","config":{}}]}}}`), &data))
+			require.NoError(t, setDataToResourceData(d, data))
+			var got []string
+			for _, w := range d.Get("state.0.widgets").([]interface{}) {
+				got = append(got, w.(map[string]interface{})[keyWidgetID].(string))
+			}
+			require.Equal(t, tc.want, got)
+		})
 	}
 }

@@ -24,5 +24,5 @@ func create(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(systemID)
-	return nil
+	return d.Set(keyAssignmentScopeVersion, 1)
 }

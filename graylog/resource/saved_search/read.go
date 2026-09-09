@@ -127,7 +127,7 @@ func read(d *schema.ResourceData, m interface{}) error {
 										return err
 									}
 								}
-								if o, ok := sort["order"].(string); ok {
+								if o, ok := sort["direction"].(string); ok {
 									if err := d.Set("sort_order", o); err != nil {
 										return err
 									}
